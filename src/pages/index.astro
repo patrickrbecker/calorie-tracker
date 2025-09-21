@@ -359,6 +359,20 @@ participants.forEach(participant => {
 		<script>
 			const currentWeek = {currentWeekNumber};
 			
+			// Toggle participant form
+			function toggleParticipantForm() {
+				const form = document.getElementById('participantForm');
+				const toggle = document.querySelector('.participant-toggle');
+				
+				if (form.classList.contains('show')) {
+					form.classList.remove('show');
+					toggle.classList.remove('expanded');
+				} else {
+					form.classList.add('show');
+					toggle.classList.add('expanded');
+				}
+			}
+			
 			// Add participant
 			async function addParticipant() {
 				const name = document.getElementById('newParticipant').value.trim();
@@ -434,20 +448,6 @@ participants.forEach(participant => {
 					}
 				} catch (error) {
 					alert('Error changing week');
-				}
-			}
-
-			// Toggle participant form
-			function toggleParticipantForm() {
-				const form = document.getElementById('participantForm');
-				const toggle = document.querySelector('.participant-toggle');
-				
-				if (form.classList.contains('show')) {
-					form.classList.remove('show');
-					toggle.classList.remove('expanded');
-				} else {
-					form.classList.add('show');
-					toggle.classList.add('expanded');
 				}
 			}
 
