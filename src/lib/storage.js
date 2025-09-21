@@ -136,8 +136,9 @@ export async function addCaloriesForDate(date, participant, calories, week) {
     contestData.weeks[week][date] = {};
   }
   
-  // Add/update calories for participant on date
-  contestData.weeks[week][date][participant] = calories;
+  // Add calories to existing amount for participant on date
+  const existingCalories = contestData.weeks[week][date][participant] || 0;
+  contestData.weeks[week][date][participant] = existingCalories + calories;
   
   const saveSuccess = await saveData(contestData);
   if (!saveSuccess) {
