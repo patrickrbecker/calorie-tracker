@@ -1,16 +1,49 @@
 ---
-// Fetch existing users and their data
-import { getUsers } from '../lib/storage.js';
+// Fetch existing contest data
+import { getContestData } from '../lib/storage.js';
 
-let users = [];
+let contestData = {};
 try {
-  users = await getUsers();
+  contestData = await getContestData();
 } catch (error) {
   console.log('No existing data found, starting fresh');
 }
 
-// Sort users by total calories (descending) for leaderboard
-const sortedUsers = users.sort((a, b) => b.totalCalories - a.totalCalories);
+// Get current week info
+const now = new Date();
+const startOfWeek = new Date(now);
+startOfWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+
+const currentWeekNumber = contestData.currentWeek || 1;
+const weekData = contestData.weeks?.[currentWeekNumber] || {};
+const participants = contestData.participants || [];
+
+// Generate 7 days for current week
+const weekDays = [];
+for (let i = 0; i < 7; i++) {
+  const date = new Date(startOfWeek);
+  date.setDate(startOfWeek.getDate() + i);
+  weekDays.push({
+    date: date.toISOString().split('T')[0],
+    displayDate: date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  });
+}
+
+// Calculate weekly totals for each participant
+const weeklyTotals = {};
+participants.forEach(participant => {
+  weeklyTotals[participant] = 0;
+  weekDays.forEach(day => {
+    const dayData = weekData[day.date];
+    if (dayData && dayData[participant]) {
+      weeklyTotals[participant] += dayData[participant];
+    }
+  });
+});
 ---
 
 <html lang="en">
@@ -19,228 +52,285 @@ const sortedUsers = users.sort((a, b) => b.totalCalories - a.totalCalories);
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Calorie Consumption Contest</title>
+		<title>Calorie Burning Contest</title>
 		<style>
 			body {
 				font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-				max-width: 800px;
-				margin: 0 auto;
+				margin: 0;
 				padding: 20px;
-				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-				min-height: 100vh;
+				background: #f8f9fa;
 				color: #333;
 			}
+			
 			.container {
+				max-width: 1200px;
+				margin: 0 auto;
 				background: white;
-				border-radius: 15px;
-				padding: 30px;
-				box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-			}
-			h1 {
-				text-align: center;
-				color: #4a5568;
-				margin-bottom: 30px;
-				font-size: 2.5em;
-			}
-			.section {
-				margin-bottom: 40px;
-				padding: 25px;
-				border: 2px solid #e2e8f0;
-				border-radius: 10px;
-				background: #f7fafc;
-			}
-			.section h2 {
-				color: #2d3748;
-				margin-bottom: 20px;
-				font-size: 1.5em;
-			}
-			.form-group {
-				margin-bottom: 15px;
-			}
-			label {
-				display: block;
-				margin-bottom: 5px;
-				font-weight: bold;
-				color: #4a5568;
-			}
-			input[type="text"], input[type="number"] {
-				width: 100%;
-				padding: 12px;
-				border: 2px solid #cbd5e0;
 				border-radius: 8px;
-				font-size: 16px;
-				transition: border-color 0.3s;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+				overflow: hidden;
 			}
-			input[type="text"]:focus, input[type="number"]:focus {
-				outline: none;
-				border-color: #667eea;
+			
+			.header {
+				background: #2c3e50;
+				color: white;
+				padding: 20px;
+				text-align: center;
 			}
-			button {
-				background: #667eea;
+			
+			.header h1 {
+				margin: 0;
+				font-size: 2em;
+			}
+			
+			.week-header {
+				background: #34495e;
+				color: white;
+				padding: 15px 20px;
+				font-size: 1.2em;
+				font-weight: bold;
+			}
+			
+			.controls {
+				padding: 20px;
+				background: #ecf0f1;
+				display: flex;
+				gap: 15px;
+				flex-wrap: wrap;
+				align-items: center;
+			}
+			
+			.controls input, .controls button {
+				padding: 8px 12px;
+				border: 1px solid #bdc3c7;
+				border-radius: 4px;
+				font-size: 14px;
+			}
+			
+			.controls button {
+				background: #3498db;
 				color: white;
 				border: none;
-				padding: 12px 24px;
-				border-radius: 8px;
 				cursor: pointer;
-				font-size: 16px;
-				transition: background-color 0.3s;
+				font-weight: bold;
 			}
-			button:hover {
-				background: #5a67d8;
+			
+			.controls button:hover {
+				background: #2980b9;
 			}
-			.leaderboard {
+			
+			.excel-table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 14px;
+			}
+			
+			.excel-table th {
+				background: #34495e;
+				color: white;
+				padding: 12px 8px;
+				text-align: center;
+				border: 1px solid #2c3e50;
+				font-weight: bold;
+				min-width: 120px;
+			}
+			
+			.excel-table td {
+				padding: 10px 8px;
+				text-align: center;
+				border: 1px solid #bdc3c7;
 				background: white;
 			}
-			.user-item {
+			
+			.excel-table .date-cell {
+				background: #ecf0f1;
+				font-weight: bold;
+				text-align: left;
+				padding-left: 15px;
+				min-width: 140px;
+			}
+			
+			.excel-table .total-row {
+				background: #f1c40f;
+				font-weight: bold;
+			}
+			
+			.excel-table .total-row .date-cell {
+				background: #f39c12;
+				color: white;
+			}
+			
+			.excel-table input {
+				width: 80px;
+				padding: 4px;
+				border: 1px solid #bdc3c7;
+				border-radius: 3px;
+				text-align: center;
+			}
+			
+			.participant-cell {
+				position: relative;
+			}
+			
+			.participant-cell:hover {
+				background: #ecf0f1;
+			}
+			
+			.empty-row {
+				height: 20px;
+			}
+			
+			.add-participant {
+				background: #27ae60;
+				margin-left: auto;
+			}
+			
+			.add-participant:hover {
+				background: #229954;
+			}
+			
+			.week-nav {
+				padding: 15px 20px;
+				background: #ecf0f1;
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				padding: 15px;
-				margin-bottom: 10px;
-				border-radius: 8px;
-				background: #edf2f7;
-				border-left: 4px solid #667eea;
 			}
-			.user-item.leader {
-				background: #fed7d7;
-				border-left-color: #f56565;
+			
+			.week-nav button {
+				padding: 8px 16px;
+				background: #95a5a6;
+				color: white;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
 			}
-			.position {
-				font-weight: bold;
-				color: #667eea;
-				margin-right: 15px;
-			}
-			.username {
-				flex-grow: 1;
-				font-weight: bold;
-			}
-			.calories {
-				font-size: 1.2em;
-				color: #2d3748;
-			}
-			.no-users {
-				text-align: center;
-				color: #718096;
-				font-style: italic;
-			}
-			.success-message {
-				background: #c6f6d5;
-				color: #22543d;
-				padding: 10px;
-				border-radius: 5px;
-				margin-bottom: 15px;
-			}
-			.error-message {
-				background: #fed7d7;
-				color: #c53030;
-				padding: 10px;
-				border-radius: 5px;
-				margin-bottom: 15px;
+			
+			.week-nav button:hover {
+				background: #7f8c8d;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<h1>🔥 Calorie Consumption Contest 🔥</h1>
-			
-			<!-- User Registration Section -->
-			<div class="section">
-				<h2>Join the Contest</h2>
-				<form id="registerForm">
-					<div class="form-group">
-						<label for="username">Enter your username:</label>
-						<input type="text" id="username" name="username" required placeholder="Your awesome username">
-					</div>
-					<button type="submit">Join Contest</button>
-				</form>
+			<!-- Header -->
+			<div class="header">
+				<h1>🔥 Calorie Burning Contest 🔥</h1>
+				<p>Active Calories Burned Daily Tracking</p>
 			</div>
 
-			<!-- Calorie Entry Section -->
-			<div class="section">
-				<h2>Log Your Calories</h2>
-				<form id="calorieForm">
-					<div class="form-group">
-						<label for="calorieUsername">Your username:</label>
-						<input type="text" id="calorieUsername" name="username" required placeholder="Your username">
-					</div>
-					<div class="form-group">
-						<label for="calories">Calories consumed:</label>
-						<input type="number" id="calories" name="calories" required placeholder="Enter calories" min="1">
-					</div>
-					<button type="submit">Add Calories</button>
-				</form>
+			<!-- Week Navigation -->
+			<div class="week-nav">
+				<button onclick="changeWeek(-1)" id="prevWeek">← Previous Week</button>
+				<span><strong>Week {currentWeekNumber}</strong></span>
+				<button onclick="changeWeek(1)" id="nextWeek">Next Week →</button>
 			</div>
 
-			<!-- Leaderboard Section -->
-			<div class="section leaderboard">
-				<h2>🏆 Leaderboard</h2>
-				{sortedUsers.length === 0 ? (
-					<div class="no-users">No contestants yet! Be the first to join!</div>
-				) : (
-					<div>
-						{sortedUsers.map((user, index) => (
-							<div class={`user-item ${index === 0 ? 'leader' : ''}`}>
-								<span class="position">#{index + 1}</span>
-								<span class="username">{user.username}</span>
-								<span class="calories">{user.totalCalories.toLocaleString()} cal</span>
-							</div>
+			<!-- Controls -->
+			<div class="controls">
+				<input type="text" id="newParticipant" placeholder="Enter participant name">
+				<button onclick="addParticipant()" class="add-participant">Add Participant</button>
+				
+				<input type="date" id="selectedDate" value={weekDays[0]?.date}>
+				<input type="text" id="selectedParticipant" placeholder="Participant name">
+				<input type="number" id="calorieAmount" placeholder="Calories burned" min="0">
+				<button onclick="addCalories()">Add Calories</button>
+			</div>
+
+			<!-- Excel-style Table -->
+			<table class="excel-table">
+				<thead>
+					<tr>
+						<th>Date</th>
+						{participants.map(participant => (
+							<th>{participant}</th>
 						))}
-					</div>
-				)}
-			</div>
+					</tr>
+				</thead>
+				<tbody>
+					{weekDays.map(day => (
+						<tr>
+							<td class="date-cell">{day.displayDate}</td>
+							{participants.map(participant => (
+								<td class="participant-cell">
+									{weekData[day.date]?.[participant] || ''}
+								</td>
+							))}
+						</tr>
+					))}
+					
+					<!-- Weekly Total Row -->
+					<tr class="total-row">
+						<td class="date-cell">Weekly Total</td>
+						{participants.map(participant => (
+							<td>{weeklyTotals[participant] || 0}</td>
+						))}
+					</tr>
+					
+					<!-- Empty spacing rows -->
+					<tr class="empty-row"><td colspan={participants.length + 1}></td></tr>
+					<tr class="empty-row"><td colspan={participants.length + 1}></td></tr>
+				</tbody>
+			</table>
+
+			{participants.length === 0 && (
+				<div style="padding: 40px; text-align: center; color: #7f8c8d;">
+					<p><strong>No participants yet!</strong></p>
+					<p>Add your first participant above to start the contest.</p>
+				</div>
+			)}
 		</div>
 
 		<script>
-			// Handle user registration
-			document.getElementById('registerForm').addEventListener('submit', async (e) => {
-				e.preventDefault();
-				const formData = new FormData(e.target);
-				const username = formData.get('username');
+			// Add participant
+			async function addParticipant() {
+				const name = document.getElementById('newParticipant').value.trim();
+				if (!name) {
+					alert('Please enter a participant name');
+					return;
+				}
 
 				try {
-					const response = await fetch('/api/register', {
+					const response = await fetch('/api/add-participant', {
 						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({ username })
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ name })
 					});
 
 					const result = await response.json();
-					
 					if (response.ok) {
-						alert('Successfully joined the contest!');
-						e.target.reset();
+						document.getElementById('newParticipant').value = '';
 						window.location.reload();
 					} else {
-						alert(result.error || 'Failed to join contest');
+						alert(result.error || 'Failed to add participant');
 					}
 				} catch (error) {
-					alert('Error joining contest. Please try again.');
+					alert('Error adding participant. Please try again.');
 				}
-			});
+			}
 
-			// Handle calorie logging
-			document.getElementById('calorieForm').addEventListener('submit', async (e) => {
-				e.preventDefault();
-				const formData = new FormData(e.target);
-				const username = formData.get('username');
-				const calories = parseInt(formData.get('calories'));
+			// Add calories
+			async function addCalories() {
+				const date = document.getElementById('selectedDate').value;
+				const participant = document.getElementById('selectedParticipant').value.trim();
+				const calories = parseInt(document.getElementById('calorieAmount').value);
+
+				if (!date || !participant || !calories || calories < 0) {
+					alert('Please fill in all fields with valid values');
+					return;
+				}
 
 				try {
-					const response = await fetch('/api/calories', {
+					const response = await fetch('/api/add-calories', {
 						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({ username, calories })
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ date, participant, calories, week: ${currentWeekNumber} })
 					});
 
 					const result = await response.json();
-					
 					if (response.ok) {
-						alert(`Added ${calories} calories for ${username}!`);
-						e.target.reset();
+						document.getElementById('selectedParticipant').value = '';
+						document.getElementById('calorieAmount').value = '';
 						window.location.reload();
 					} else {
 						alert(result.error || 'Failed to add calories');
@@ -248,6 +338,35 @@ const sortedUsers = users.sort((a, b) => b.totalCalories - a.totalCalories);
 				} catch (error) {
 					alert('Error adding calories. Please try again.');
 				}
+			}
+
+			// Week navigation
+			async function changeWeek(direction) {
+				const newWeek = ${currentWeekNumber} + direction;
+				if (newWeek < 1) return;
+
+				try {
+					const response = await fetch('/api/change-week', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ week: newWeek })
+					});
+
+					if (response.ok) {
+						window.location.reload();
+					}
+				} catch (error) {
+					alert('Error changing week');
+				}
+			}
+
+			// Enter key handlers
+			document.getElementById('newParticipant').addEventListener('keypress', function(e) {
+				if (e.key === 'Enter') addParticipant();
+			});
+
+			document.getElementById('calorieAmount').addEventListener('keypress', function(e) {
+				if (e.key === 'Enter') addCalories();
 			});
 		</script>
 	</body>

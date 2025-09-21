@@ -1,8 +1,8 @@
-import { clearAllUsers } from '../../lib/storage.js';
+import { clearAllData } from '../../lib/storage.js';
 
 export async function POST({ request }) {
   try {
-    await clearAllUsers();
+    await clearAllData();
 
     return new Response(JSON.stringify({ 
       success: true, 
