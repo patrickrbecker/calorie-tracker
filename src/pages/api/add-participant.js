@@ -3,15 +3,18 @@ import { addParticipant } from '../../lib/storage.js';
 export async function POST({ request }) {
   try {
     const { name } = await request.json();
+    console.log('API: Adding participant:', name);
     
     if (!name || name.trim() === '') {
+      console.log('API: Empty name provided');
       return new Response(JSON.stringify({ error: 'Participant name is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    await addParticipant(name.trim());
+    const result = await addParticipant(name.trim());
+    console.log('API: Participant added successfully:', result);
 
     return new Response(JSON.stringify({ 
       success: true, 

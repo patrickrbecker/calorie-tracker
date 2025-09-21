@@ -106,12 +106,21 @@ export async function getContestData() {
 }
 
 export async function addParticipant(name) {
+  console.log('Storage: Adding participant:', name);
   const contestData = await loadData();
+  console.log('Storage: Current participants:', contestData.participants);
+  
   if (contestData.participants.includes(name)) {
+    console.log('Storage: Participant already exists');
     throw new Error('Participant already exists');
   }
+  
   contestData.participants.push(name);
+  console.log('Storage: Updated participants:', contestData.participants);
+  
   const saveSuccess = await saveData(contestData);
+  console.log('Storage: Save success:', saveSuccess);
+  
   if (!saveSuccess) {
     throw new Error('Failed to save participant data');
   }
