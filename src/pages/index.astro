@@ -360,16 +360,26 @@ participants.forEach(participant => {
 			const currentWeek = {currentWeekNumber};
 			
 			// Toggle participant form
-			function toggleParticipantForm() {
+			window.toggleParticipantForm = function() {
+				console.log('Toggle function called');
 				const form = document.getElementById('participantForm');
 				const toggle = document.querySelector('.participant-toggle');
 				
-				if (form.classList.contains('show')) {
-					form.classList.remove('show');
-					toggle.classList.remove('expanded');
+				console.log('Form element:', form);
+				console.log('Toggle element:', toggle);
+				
+				if (form && toggle) {
+					if (form.classList.contains('show')) {
+						form.classList.remove('show');
+						toggle.classList.remove('expanded');
+						console.log('Collapsed');
+					} else {
+						form.classList.add('show');
+						toggle.classList.add('expanded');
+						console.log('Expanded');
+					}
 				} else {
-					form.classList.add('show');
-					toggle.classList.add('expanded');
+					console.error('Elements not found');
 				}
 			}
 			
@@ -450,6 +460,20 @@ participants.forEach(participant => {
 					alert('Error changing week');
 				}
 			}
+
+			// Add click listener for participant toggle
+			document.addEventListener('DOMContentLoaded', function() {
+				const toggleButton = document.querySelector('.participant-toggle');
+				if (toggleButton) {
+					toggleButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						console.log('Button clicked via event listener');
+						window.toggleParticipantForm();
+					});
+				} else {
+					console.error('Toggle button not found');
+				}
+			});
 
 			// Enter key handlers
 			document.getElementById('newParticipant').addEventListener('keypress', function(e) {
