@@ -1,5 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { userExists, addUser } from '../../lib/storage.js';
 
 export async function POST({ request }) {
   try {
@@ -12,24 +11,8 @@ export async function POST({ request }) {
       });
     }
 
-    // Create data directory if it doesn't exist
-    const dataDir = join(process.cwd(), 'data');
-    if (!existsSync(dataDir)) {
-      mkdirSync(dataDir, { recursive: true });
-    }
-
-    const dataPath = join(dataDir, 'users.json');
-    let users = [];
-
-    // Read existing users
-    if (existsSync(dataPath)) {
-      const data = readFileSync(dataPath, 'utf-8');
-      users = JSON.parse(data);
-    }
-
     // Check if username already exists
-    const existingUser = users.find(user => user.username.toLowerCase() === username.toLowerCase());
-    if (existingUser) {
+    if (await userExists(username)) {
       return new Response(JSON.stringify({ error: 'Username already exists' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -44,10 +27,7 @@ export async function POST({ request }) {
       joinedDate: new Date().toISOString()
     };
 
-    users.push(newUser);
-
-    // Save to file
-    writeFileSync(dataPath, JSON.stringify(users, null, 2));
+    await addUser(newUser);
 
     return new Response(JSON.stringify({ success: true, user: newUser }), {
       status: 200,

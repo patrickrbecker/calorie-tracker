@@ -1,15 +1,10 @@
 ---
 // Fetch existing users and their data
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { getUsers } from '../lib/storage.js';
 
 let users = [];
 try {
-  const dataPath = join(process.cwd(), 'data', 'users.json');
-  if (existsSync(dataPath)) {
-    const data = readFileSync(dataPath, 'utf-8');
-    users = JSON.parse(data);
-  }
+  users = await getUsers();
 } catch (error) {
   console.log('No existing data found, starting fresh');
 }

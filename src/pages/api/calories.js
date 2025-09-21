@@ -1,5 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { findUser, updateUser } from '../../lib/storage.js';
 
 export async function POST({ request }) {
   try {
@@ -19,24 +18,9 @@ export async function POST({ request }) {
       });
     }
 
-    // Create data directory if it doesn't exist
-    const dataDir = join(process.cwd(), 'data');
-    if (!existsSync(dataDir)) {
-      mkdirSync(dataDir, { recursive: true });
-    }
-
-    const dataPath = join(dataDir, 'users.json');
-    let users = [];
-
-    // Read existing users
-    if (existsSync(dataPath)) {
-      const data = readFileSync(dataPath, 'utf-8');
-      users = JSON.parse(data);
-    }
-
     // Find the user
-    const userIndex = users.findIndex(user => user.username.toLowerCase() === username.toLowerCase());
-    if (userIndex === -1) {
+    const user = await findUser(username);
+    if (!user) {
       return new Response(JSON.stringify({ error: 'User not found. Please register first.' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -51,15 +35,15 @@ export async function POST({ request }) {
       dateString: today
     };
 
-    users[userIndex].entries.push(calorieEntry);
-    users[userIndex].totalCalories += parseInt(calories);
+    user.entries.push(calorieEntry);
+    user.totalCalories += parseInt(calories);
 
-    // Save to file
-    writeFileSync(dataPath, JSON.stringify(users, null, 2));
+    // Update user in storage
+    await updateUser(username, user);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      user: users[userIndex],
+      user: user,
       entry: calorieEntry
     }), {
       status: 200,
