@@ -111,7 +111,10 @@ export async function addParticipant(name) {
     throw new Error('Participant already exists');
   }
   contestData.participants.push(name);
-  await saveData(contestData);
+  const saveSuccess = await saveData(contestData);
+  if (!saveSuccess) {
+    throw new Error('Failed to save participant data');
+  }
   return contestData;
 }
 
@@ -131,7 +134,10 @@ export async function addCaloriesForDate(date, participant, calories, week) {
   // Add/update calories for participant on date
   contestData.weeks[week][date][participant] = calories;
   
-  await saveData(contestData);
+  const saveSuccess = await saveData(contestData);
+  if (!saveSuccess) {
+    throw new Error('Failed to save calorie data');
+  }
   return contestData;
 }
 
@@ -140,7 +146,10 @@ export async function setCurrentWeek(weekNumber) {
   // Only allow weeks 1-5 for October 2025
   if (weekNumber >= 1 && weekNumber <= 5) {
     contestData.currentWeek = weekNumber;
-    await saveData(contestData);
+    const saveSuccess = await saveData(contestData);
+    if (!saveSuccess) {
+      throw new Error('Failed to save week data');
+    }
   }
   return contestData;
 }
