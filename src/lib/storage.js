@@ -78,11 +78,11 @@ async function saveData(data) {
   if (hasBlob) {
     try {
       const jsonString = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
       
-      const result = await put(STORAGE_FILENAME, blob, {
+      const result = await put(STORAGE_FILENAME, jsonString, {
         access: 'public',
         addRandomSuffix: false,
+        contentType: 'application/json',
       });
       console.log('Saved to Blob successfully:', result.url);
       localCache = { ...data }; // Also update local cache
@@ -90,7 +90,8 @@ async function saveData(data) {
     } catch (error) {
       console.error('Error saving to Blob:', error.message);
       console.error('Full error:', error);
-      // Fall through to in-memory cache
+      // This is critical - if Blob fails, we should throw an error
+      throw error;
     }
   }
   
