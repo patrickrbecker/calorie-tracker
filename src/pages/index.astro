@@ -309,7 +309,7 @@ participants.forEach(participant => {
 				<input type="date" id="selectedDate" value={weekDays[0]?.date} min="2025-10-01" max="2025-10-31">
 				<input type="text" id="selectedParticipant" placeholder="Participant name">
 				<input type="number" id="calorieAmount" placeholder="Calories burned" min="0">
-				<button onclick="addCalories()">🔥 Add Calories</button>
+				<button type="button" id="addCaloriesBtn">🔥 Add Calories</button>
 			</div>
 
 			<!-- Excel-style Table -->
@@ -489,6 +489,14 @@ participants.forEach(participant => {
 					addButton.addEventListener('click', function(e) {
 						e.preventDefault();
 						addParticipant();
+					});
+				}
+				
+				const addCaloriesButton = document.getElementById('addCaloriesBtn');
+				if (addCaloriesButton) {
+					addCaloriesButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						addCalories();
 					});
 				}
 			});
