@@ -357,7 +357,7 @@ participants.forEach(participant => {
 		</div>
 
 		<script>
-			const currentWeek = {currentWeekNumber};
+			const currentWeek = {JSON.stringify(currentWeekNumber)};
 			
 			// Toggle participant form
 			window.toggleParticipantForm = function() {
