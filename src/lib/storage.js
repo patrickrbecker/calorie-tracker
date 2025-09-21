@@ -83,6 +83,7 @@ async function saveData(data) {
         access: 'public',
         addRandomSuffix: false,
         contentType: 'application/json',
+        allowOverwrite: true,
       });
       console.log('Saved to Blob successfully:', result.url);
       localCache = { ...data }; // Also update local cache
