@@ -12,6 +12,7 @@
     "@astrojs/vercel": "^8.2.7",
     "@vercel/blob": "^2.0.0",
     "astro": "^5.13.9",
+    "chart.js": "^4.5.0",
     "pg": "^8.16.3"
   }
 }

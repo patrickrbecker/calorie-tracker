@@ -117,3 +117,17 @@ export async function participantExists(name) {
   );
   return result.rows.length > 0;
 }
+
+export async function getParticipantTotals() {
+  await initDB();
+  const result = await pool.query(`
+    SELECT 
+      p.name,
+      COALESCE(SUM(c.calories), 0) as total_calories
+    FROM participants p
+    LEFT JOIN calories c ON p.name = c.participant_name
+    GROUP BY p.name
+    ORDER BY total_calories DESC
+  `);
+  return result.rows;
+}
