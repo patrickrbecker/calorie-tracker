@@ -400,6 +400,8 @@ participants.forEach(participant => {
 
 					const result = await response.json();
 					if (response.ok) {
+						// Show success confirmation
+						alert(`✅ Success! "${name}" has been added to the contest!`);
 						document.getElementById('newParticipant').value = '';
 						window.location.reload();
 					} else {
@@ -430,6 +432,10 @@ participants.forEach(participant => {
 
 					const result = await response.json();
 					if (response.ok) {
+						// Show success confirmation
+						const dateObj = new Date(date);
+						const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+						alert(`🔥 Success! ${calories} calories added for ${participant} on ${formattedDate}!`);
 						document.getElementById('selectedParticipant').value = '';
 						document.getElementById('calorieAmount').value = '';
 						window.location.reload();
