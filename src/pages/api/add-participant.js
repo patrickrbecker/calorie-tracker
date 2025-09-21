@@ -1,4 +1,4 @@
-import { addParticipant } from '../../lib/storage.js';
+import { addParticipant } from '../../lib/db.js';
 
 export async function POST({ request }) {
   try {

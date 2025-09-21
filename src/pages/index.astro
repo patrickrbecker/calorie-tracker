@@ -1,10 +1,12 @@
 ---
 // Fetch existing contest data
-import { getContestData } from '../lib/storage.js';
+import { getParticipants, getWeekData } from '../lib/db.js';
 
-let contestData = {};
+let participants = [];
+let weekData = {};
 try {
-  contestData = await getContestData();
+  participants = await getParticipants();
+  weekData = await getWeekData(1); // Default to week 1
 } catch (error) {
   console.log('No existing data found, starting fresh');
 }
@@ -28,9 +30,8 @@ const contestWeek = Math.max(1, Math.min(weekNumber, 5)); // October has 5 weeks
 const startOfWeek = new Date('2025-10-01');
 startOfWeek.setDate(startOfWeek.getDate() + ((contestWeek - 1) * 7));
 
-const currentWeekNumber = contestData.currentWeek || contestWeek;
-const weekData = contestData.weeks?.[currentWeekNumber] || {};
-const participants = contestData.participants || [];
+const currentWeekNumber = 1; // Start with week 1 for now
+// weekData and participants are already loaded above
 
 // Generate 7 days for current October week
 const weekDays = [];

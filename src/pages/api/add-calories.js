@@ -1,4 +1,4 @@
-import { addCaloriesForDate, participantExists } from '../../lib/storage.js';
+import { addCalories, participantExists } from '../../lib/db.js';
 
 export async function POST({ request }) {
   try {
@@ -26,7 +26,7 @@ export async function POST({ request }) {
       });
     }
 
-    await addCaloriesForDate(date, participant, parseInt(calories), week);
+    await addCalories(participant, date, parseInt(calories), week);
 
     return new Response(JSON.stringify({ 
       success: true, 
