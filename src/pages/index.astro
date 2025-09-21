@@ -299,7 +299,7 @@ participants.forEach(participant => {
 				</button>
 				<div class="participant-form" id="participantForm">
 					<input type="text" id="newParticipant" placeholder="Enter participant name">
-					<button onclick="addParticipant()" class="add-participant">Add Participant</button>
+					<button type="button" class="add-participant" id="addParticipantBtn">Add Participant</button>
 					<small style="color: #6c757d;">Add new contestants to the burning contest</small>
 				</div>
 			</div>
@@ -467,17 +467,22 @@ participants.forEach(participant => {
 				}
 			}
 
-			// Add click listener for participant toggle
+			// Add click listeners
 			document.addEventListener('DOMContentLoaded', function() {
 				const toggleButton = document.querySelector('.participant-toggle');
 				if (toggleButton) {
 					toggleButton.addEventListener('click', function(e) {
 						e.preventDefault();
-						console.log('Button clicked via event listener');
 						window.toggleParticipantForm();
 					});
-				} else {
-					console.error('Toggle button not found');
+				}
+				
+				const addButton = document.getElementById('addParticipantBtn');
+				if (addButton) {
+					addButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						addParticipant();
+					});
 				}
 			});
 
