@@ -356,8 +356,8 @@ participants.forEach(participant => {
 			)}
 		</div>
 
-		<script>
-			const currentWeek = {currentWeekNumber || 1};
+		<script define:vars={{ currentWeek: currentWeekNumber }}>
+			// currentWeek is now available from define:vars
 			
 			// Toggle participant form
 			window.toggleParticipantForm = function() {
