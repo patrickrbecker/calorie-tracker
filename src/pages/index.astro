@@ -439,9 +439,10 @@ participants.forEach(participant => {
 
 					const result = await response.json();
 					if (response.ok) {
-						// Show success confirmation
-						const dateObj = new Date(date);
-						const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+						// Show success confirmation - use the date string directly to avoid timezone issues
+						const dateParts = date.split('-');
+						const month = new Date(0, parseInt(dateParts[1]) - 1).toLocaleDateString('en-US', { month: 'short' });
+						const formattedDate = `${month} ${parseInt(dateParts[2])}`;
 						alert(`🔥 Success! ${calories} calories added for ${participant} on ${formattedDate}!`);
 						document.getElementById('selectedParticipant').value = '';
 						document.getElementById('calorieAmount').value = '';
