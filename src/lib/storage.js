@@ -1,7 +1,7 @@
-import { kv } from '@vercel/kv';
+import { put, head } from '@vercel/blob';
 
-// Storage key for KV
-const STORAGE_KEY = 'october-2025-contest-data';
+// Storage filename for Blob
+const STORAGE_FILENAME = 'october-2025-contest-data.json';
 
 // Default contest data structure
 const defaultContestData = {
@@ -13,20 +13,35 @@ const defaultContestData = {
   weeks: {}
 };
 
-// Check if we're in a Vercel environment with KV configured
-const hasKV = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+// Check if we're in a Vercel environment with Blob configured
+const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
 
 // Fallback local storage for development
 let localCache = null;
 
-// Load data from KV or local cache
+// Load data from Blob or local cache
 async function loadData() {
-  if (hasKV) {
+  if (hasBlob) {
     try {
-      const data = await kv.get(STORAGE_KEY);
-      return data || { ...defaultContestData };
+      // Check if blob exists first
+      const response = await fetch(`https://blob.vercel-storage.com/${STORAGE_FILENAME}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else if (response.status === 404) {
+        // File doesn't exist yet, return defaults
+        return { ...defaultContestData };
+      } else {
+        console.error('Error loading from Blob:', response.statusText);
+        return { ...defaultContestData };
+      }
     } catch (error) {
-      console.error('Error loading from KV:', error.message);
+      console.error('Error loading from Blob:', error.message);
       return { ...defaultContestData };
     }
   }
@@ -53,14 +68,20 @@ async function loadData() {
   return localCache;
 }
 
-// Save data to KV or local cache
+// Save data to Blob or local cache
 async function saveData(data) {
-  if (hasKV) {
+  if (hasBlob) {
     try {
-      await kv.set(STORAGE_KEY, data);
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      
+      await put(STORAGE_FILENAME, blob, {
+        access: 'public',
+        addRandomSuffix: false,
+      });
       return true;
     } catch (error) {
-      console.error('Error saving to KV:', error.message);
+      console.error('Error saving to Blob:', error.message);
       return false;
     }
   }
