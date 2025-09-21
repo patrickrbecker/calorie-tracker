@@ -23,8 +23,10 @@ let localCache = null;
 
 // Load data from Blob or local cache
 async function loadData() {
+  console.log('loadData: hasBlob =', hasBlob);
   if (hasBlob) {
     try {
+      console.log('loadData: Attempting to fetch from Blob');
       // Check if blob exists first
       const response = await fetch(`https://blob.vercel-storage.com/${STORAGE_FILENAME}`, {
         headers: {
@@ -32,11 +34,15 @@ async function loadData() {
         }
       });
       
+      console.log('loadData: Blob response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('loadData: Successfully loaded from Blob:', data);
         return data;
       } else if (response.status === 404) {
         // File doesn't exist yet, return defaults
+        console.log('loadData: Blob file not found, using defaults');
         return { ...defaultContestData };
       } else {
         console.error('Error loading from Blob:', response.statusText);
