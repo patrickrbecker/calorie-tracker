@@ -109,33 +109,6 @@ participants.forEach(participant => {
 				font-weight: bold;
 			}
 			
-			.controls {
-				padding: 20px;
-				background: #ecf0f1;
-				display: flex;
-				gap: 15px;
-				flex-wrap: wrap;
-				align-items: center;
-			}
-			
-			.controls input, .controls button {
-				padding: 8px 12px;
-				border: 1px solid #bdc3c7;
-				border-radius: 4px;
-				font-size: 14px;
-			}
-			
-			.controls button {
-				background: #3498db;
-				color: white;
-				border: none;
-				cursor: pointer;
-				font-weight: bold;
-			}
-			
-			.controls button:hover {
-				background: #2980b9;
-			}
 			
 			.excel-table {
 				width: 100%;
@@ -199,12 +172,11 @@ participants.forEach(participant => {
 			}
 			
 			.add-participant {
-				background: #27ae60;
-				margin-left: auto;
+				background: #27ae60 !important;
 			}
 			
 			.add-participant:hover {
-				background: #229954;
+				background: #229954 !important;
 			}
 			
 			.week-nav {
@@ -227,6 +199,81 @@ participants.forEach(participant => {
 			.week-nav button:hover {
 				background: #7f8c8d;
 			}
+			
+			/* Collapsible participant management */
+			.participant-management {
+				background: #f8f9fa;
+				border-bottom: 1px solid #e9ecef;
+			}
+			
+			.participant-toggle {
+				width: 100%;
+				padding: 15px 20px;
+				background: #e9ecef;
+				border: none;
+				text-align: left;
+				cursor: pointer;
+				font-size: 14px;
+				font-weight: bold;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				color: #495057;
+			}
+			
+			.participant-toggle:hover {
+				background: #dee2e6;
+			}
+			
+			.participant-toggle-icon {
+				transition: transform 0.2s ease;
+			}
+			
+			.participant-toggle.expanded .participant-toggle-icon {
+				transform: rotate(180deg);
+			}
+			
+			.participant-form {
+				display: none;
+				padding: 20px;
+				background: #f8f9fa;
+				border-top: 1px solid #e9ecef;
+			}
+			
+			.participant-form.show {
+				display: flex;
+				gap: 15px;
+				align-items: center;
+				flex-wrap: wrap;
+			}
+			
+			.main-controls {
+				padding: 20px;
+				background: #ecf0f1;
+				display: flex;
+				gap: 15px;
+				flex-wrap: wrap;
+				align-items: center;
+			}
+			
+			.main-controls input, .main-controls button, .participant-form input, .participant-form button {
+				padding: 8px 12px;
+				border: 1px solid #bdc3c7;
+				border-radius: 4px;
+				font-size: 14px;
+			}
+			
+			.main-controls button, .participant-form button {
+				background: #3498db;
+				color: white;
+				border: none;
+				cursor: pointer;
+				font-weight: bold;
+			}
+			
+			.main-controls button:hover, .participant-form button:hover {
+				background: #2980b9;
+			}
 		</style>
 	</head>
 	<body>
@@ -244,15 +291,25 @@ participants.forEach(participant => {
 				<button onclick="changeWeek(1)" id="nextWeek">Next Week →</button>
 			</div>
 
-			<!-- Controls -->
-			<div class="controls">
-				<input type="text" id="newParticipant" placeholder="Enter participant name">
-				<button onclick="addParticipant()" class="add-participant">Add Participant</button>
-				
+			<!-- Collapsible Participant Management -->
+			<div class="participant-management">
+				<button class="participant-toggle" onclick="toggleParticipantForm()">
+					<span>👥 Manage Participants ({participants.length} active)</span>
+					<span class="participant-toggle-icon">▼</span>
+				</button>
+				<div class="participant-form" id="participantForm">
+					<input type="text" id="newParticipant" placeholder="Enter participant name">
+					<button onclick="addParticipant()" class="add-participant">Add Participant</button>
+					<small style="color: #6c757d;">Add new contestants to the burning contest</small>
+				</div>
+			</div>
+
+			<!-- Main Calorie Tracking Controls -->
+			<div class="main-controls">
 				<input type="date" id="selectedDate" value={weekDays[0]?.date} min="2025-10-01" max="2025-10-31">
 				<input type="text" id="selectedParticipant" placeholder="Participant name">
 				<input type="number" id="calorieAmount" placeholder="Calories burned" min="0">
-				<button onclick="addCalories()">Add Calories</button>
+				<button onclick="addCalories()">🔥 Add Calories</button>
 			</div>
 
 			<!-- Excel-style Table -->
@@ -377,6 +434,20 @@ participants.forEach(participant => {
 					}
 				} catch (error) {
 					alert('Error changing week');
+				}
+			}
+
+			// Toggle participant form
+			function toggleParticipantForm() {
+				const form = document.getElementById('participantForm');
+				const toggle = document.querySelector('.participant-toggle');
+				
+				if (form.classList.contains('show')) {
+					form.classList.remove('show');
+					toggle.classList.remove('expanded');
+				} else {
+					form.classList.add('show');
+					toggle.classList.add('expanded');
 				}
 			}
 
