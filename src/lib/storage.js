@@ -1,11 +1,14 @@
-// Excel-style contest data structure
+// October 2025 Burning Contest data structure
 let contestData = {
   currentWeek: 1,
+  contestName: "October 2025 Burning Contest",
+  contestStart: "2025-10-01",
+  contestEnd: "2025-10-31", 
   participants: [],
   weeks: {
     // week1: {
-    //   '2024-01-01': { 'John': 500, 'Jane': 600 },
-    //   '2024-01-02': { 'John': 400, 'Jane': 550 }
+    //   '2025-10-01': { 'John': 500, 'Jane': 600 },
+    //   '2025-10-02': { 'John': 400, 'Jane': 550 }
     // }
   }
 };
@@ -40,7 +43,10 @@ export async function addCaloriesForDate(date, participant, calories, week) {
 }
 
 export async function setCurrentWeek(weekNumber) {
-  contestData.currentWeek = weekNumber;
+  // Only allow weeks 1-5 for October 2025
+  if (weekNumber >= 1 && weekNumber <= 5) {
+    contestData.currentWeek = weekNumber;
+  }
   return contestData;
 }
 
@@ -55,6 +61,9 @@ export async function participantExists(name) {
 export async function clearAllData() {
   contestData = {
     currentWeek: 1,
+    contestName: "October 2025 Burning Contest",
+    contestStart: "2025-10-01",
+    contestEnd: "2025-10-31",
     participants: [],
     weeks: {}
   };

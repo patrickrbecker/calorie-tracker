@@ -1,29 +1,33 @@
-# 🔥 Calorie Consumption Contest
+# 🔥 October 2025 Burning Contest
 
-A fun, competitive calorie tracking app built with Astro for friendly contests where participants compete to consume the most calories.
+A competitive calorie burning tracking app built with Astro for the October 2025 contest where participants compete to burn the most calories.
 
 ## Features
 
-- **User Registration**: Simple username-based registration system
-- **Calorie Logging**: Easy calorie entry with validation
-- **Real-time Leaderboard**: Live rankings showing who's in the lead
-- **Responsive Design**: Works great on desktop and mobile
-- **Data Persistence**: All data stored in JSON format
+- **Participant Registration**: Add contestants to the October 2025 burning contest
+- **Daily Calorie Tracking**: Log calories burned by date with Excel-style table layout
+- **Weekly Organization**: Contest organized into 5 weeks of October 2025
+- **Weekly Totals**: Automatic calculation of weekly calorie burn totals
+- **Week Navigation**: Navigate between different weeks of the contest
+- **Excel-style Interface**: Clean spreadsheet-like appearance matching provided template
+- **October 2025 Focus**: Specifically tailored for October 1-31, 2025 contest
 
 ## How It Works
 
-1. **Join the Contest**: Enter your username to register
-2. **Log Your Calories**: Add calories consumed throughout the day
-3. **Check the Leaderboard**: See how you rank against other participants
-4. **Win the Contest**: Be the person with the most calories consumed!
+1. **Add Participants**: Register contestants for the October 2025 burning contest
+2. **Daily Tracking**: Log calories burned each day during October 2025
+3. **Weekly Progress**: View organized weekly data with automatic totals
+4. **Navigate Weeks**: Move between the 5 weeks of October using week navigation
+5. **Win the Contest**: Be the participant who burns the most calories!
 
 ## Tech Stack
 
-- **Framework**: Astro 5.x
-- **Styling**: Vanilla CSS with gradient backgrounds
-- **Data Storage**: JSON file-based storage
-- **Deployment**: Vercel-ready
-- **API**: Custom Astro API routes
+- **Framework**: Astro 5.x with serverless adapter
+- **Styling**: Excel-style table layout with professional appearance
+- **Data Storage**: In-memory JSON storage optimized for contest duration
+- **Deployment**: Vercel serverless deployment
+- **API**: Custom API routes for participant and calorie management
+- **Contest Period**: October 1-31, 2025 (5 weeks)
 
 ## Getting Started
 
@@ -53,46 +57,60 @@ npm run dev
 
 ## API Endpoints
 
-### POST /api/register
-Register a new user for the contest.
+### POST /api/add-participant
+Add a new participant to the October 2025 contest.
 
 **Body:**
 ```json
 {
-  "username": "your-username"
+  "name": "participant-name"
 }
 ```
 
-### POST /api/calories
-Add calories for a registered user.
+### POST /api/add-calories
+Log calories burned for a specific date and participant.
 
 **Body:**
 ```json
 {
-  "username": "your-username",
-  "calories": 500
+  "date": "2025-10-15",
+  "participant": "participant-name", 
+  "calories": 500,
+  "week": 3
+}
+```
+
+### POST /api/change-week
+Navigate to a different week of the contest.
+
+**Body:**
+```json
+{
+  "week": 2
 }
 ```
 
 ## Data Structure
 
-User data is stored in `/data/users.json`:
+Contest data is organized by weeks and dates:
 
 ```json
-[
-  {
-    "username": "participant1",
-    "totalCalories": 2500,
-    "entries": [
-      {
-        "calories": 500,
-        "date": "2025-01-15T10:30:00.000Z",
-        "dateString": "Mon Jan 15 2025"
-      }
-    ],
-    "joinedDate": "2025-01-15T09:00:00.000Z"
+{
+  "currentWeek": 2,
+  "contestName": "October 2025 Burning Contest",
+  "contestStart": "2025-10-01",
+  "contestEnd": "2025-10-31",
+  "participants": ["Alice", "Bob", "Charlie"],
+  "weeks": {
+    "1": {
+      "2025-10-01": { "Alice": 450, "Bob": 520 },
+      "2025-10-02": { "Alice": 380, "Bob": 600, "Charlie": 490 }
+    },
+    "2": {
+      "2025-10-08": { "Alice": 420, "Bob": 510, "Charlie": 380 }
+    }
   }
-]
+}
 ```
 
 ## Deployment
@@ -107,10 +125,12 @@ The app will automatically build and deploy your Astro application.
 
 ## Contest Rules
 
-- Participants compete to consume the most total calories
-- All calorie entries are cumulative
-- Leaderboard updates in real-time
-- Winners are determined by highest total calorie consumption
+- **Duration**: October 1-31, 2025 (exactly 31 days)
+- **Goal**: Participants compete to burn the most calories each day
+- **Tracking**: Daily calorie burn entries organized by week
+- **Weeks**: Contest spans 5 weeks of October 2025
+- **Totals**: Weekly totals automatically calculated and displayed
+- **Winner**: Participant with highest total calories burned wins
 
 ## Contributing
 

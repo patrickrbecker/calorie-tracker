@@ -9,28 +9,46 @@ try {
   console.log('No existing data found, starting fresh');
 }
 
-// Get current week info
+// Get October 2025 contest info
+const contestStart = new Date('2025-10-01'); // October 1, 2025
 const now = new Date();
-const startOfWeek = new Date(now);
-startOfWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
 
-const currentWeekNumber = contestData.currentWeek || 1;
+// Calculate which week of October we're in
+let currentDate = new Date();
+// If we're not in October 2025 yet, default to first week
+if (currentDate < contestStart) {
+  currentDate = new Date(contestStart);
+}
+
+// Calculate week number based on October 1st being week 1
+const weekNumber = Math.ceil((currentDate.getDate()) / 7);
+const contestWeek = Math.max(1, Math.min(weekNumber, 5)); // October has 5 weeks max
+
+// Get the start of the current contest week
+const startOfWeek = new Date('2025-10-01');
+startOfWeek.setDate(startOfWeek.getDate() + ((contestWeek - 1) * 7));
+
+const currentWeekNumber = contestData.currentWeek || contestWeek;
 const weekData = contestData.weeks?.[currentWeekNumber] || {};
 const participants = contestData.participants || [];
 
-// Generate 7 days for current week
+// Generate 7 days for current October week
 const weekDays = [];
 for (let i = 0; i < 7; i++) {
   const date = new Date(startOfWeek);
   date.setDate(startOfWeek.getDate() + i);
-  weekDays.push({
-    date: date.toISOString().split('T')[0],
-    displayDate: date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    })
-  });
+  
+  // Only include dates that are in October 2025
+  if (date.getMonth() === 9 && date.getFullYear() === 2025) { // October is month 9
+    weekDays.push({
+      date: date.toISOString().split('T')[0],
+      displayDate: date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      })
+    });
+  }
 }
 
 // Calculate weekly totals for each participant
@@ -52,7 +70,7 @@ participants.forEach(participant => {
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Calorie Burning Contest</title>
+		<title>October 2025 Burning Contest</title>
 		<style>
 			body {
 				font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -215,14 +233,14 @@ participants.forEach(participant => {
 		<div class="container">
 			<!-- Header -->
 			<div class="header">
-				<h1>🔥 Calorie Burning Contest 🔥</h1>
+				<h1>🔥 October 2025 Burning Contest 🔥</h1>
 				<p>Active Calories Burned Daily Tracking</p>
 			</div>
 
 			<!-- Week Navigation -->
 			<div class="week-nav">
 				<button onclick="changeWeek(-1)" id="prevWeek">← Previous Week</button>
-				<span><strong>Week {currentWeekNumber}</strong></span>
+				<span><strong>October 2025 - Week {currentWeekNumber}</strong></span>
 				<button onclick="changeWeek(1)" id="nextWeek">Next Week →</button>
 			</div>
 
@@ -231,7 +249,7 @@ participants.forEach(participant => {
 				<input type="text" id="newParticipant" placeholder="Enter participant name">
 				<button onclick="addParticipant()" class="add-participant">Add Participant</button>
 				
-				<input type="date" id="selectedDate" value={weekDays[0]?.date}>
+				<input type="date" id="selectedDate" value={weekDays[0]?.date} min="2025-10-01" max="2025-10-31">
 				<input type="text" id="selectedParticipant" placeholder="Participant name">
 				<input type="number" id="calorieAmount" placeholder="Calories burned" min="0">
 				<button onclick="addCalories()">Add Calories</button>
@@ -345,7 +363,7 @@ participants.forEach(participant => {
 			// Week navigation
 			async function changeWeek(direction) {
 				const newWeek = currentWeek + direction;
-				if (newWeek < 1) return;
+				if (newWeek < 1 || newWeek > 5) return; // October 2025 has 5 weeks max
 
 				try {
 					const response = await fetch('/api/change-week', {
