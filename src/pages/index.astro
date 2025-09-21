@@ -282,6 +282,8 @@ participants.forEach(participant => {
 		</div>
 
 		<script>
+			const currentWeek = {currentWeekNumber};
+			
 			// Add participant
 			async function addParticipant() {
 				const name = document.getElementById('newParticipant').value.trim();
@@ -324,7 +326,7 @@ participants.forEach(participant => {
 					const response = await fetch('/api/add-calories', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ date, participant, calories, week: ${currentWeekNumber} })
+						body: JSON.stringify({ date, participant, calories, week: currentWeek })
 					});
 
 					const result = await response.json();
@@ -342,7 +344,7 @@ participants.forEach(participant => {
 
 			// Week navigation
 			async function changeWeek(direction) {
-				const newWeek = ${currentWeekNumber} + direction;
+				const newWeek = currentWeek + direction;
 				if (newWeek < 1) return;
 
 				try {
