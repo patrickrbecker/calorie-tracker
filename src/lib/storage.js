@@ -15,6 +15,7 @@ const defaultContestData = {
 
 // Check if we're in a Vercel environment with Blob configured
 const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
+console.log('hasBlob:', hasBlob ? 'YES' : 'NO');
 
 // Fallback local storage for development
 let localCache = null;
@@ -70,6 +71,8 @@ async function loadData() {
 
 // Save data to Blob or local cache
 async function saveData(data) {
+  console.log('saveData called with:', JSON.stringify(data, null, 2));
+  
   if (hasBlob) {
     try {
       const jsonString = JSON.stringify(data, null, 2);
@@ -79,26 +82,18 @@ async function saveData(data) {
         access: 'public',
         addRandomSuffix: false,
       });
+      console.log('Saved to Blob successfully');
       return true;
     } catch (error) {
       console.error('Error saving to Blob:', error.message);
-      return false;
+      // Fall through to in-memory cache
     }
   }
   
-  // Development fallback - save to file
-  try {
-    const fs = require('fs');
-    const path = require('path');
-    const DATA_FILE = path.join(process.cwd(), 'contest-data.json');
-    
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    localCache = data;
-    return true;
-  } catch (error) {
-    console.error('Error saving data:', error.message);
-    return false;
-  }
+  // In-memory cache as fallback (will persist during function lifetime)
+  console.log('Using in-memory cache fallback');
+  localCache = { ...data };
+  return true;
 }
 
 export async function getContestData() {
