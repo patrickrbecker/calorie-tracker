@@ -15,7 +15,8 @@ const defaultContestData = {
 
 // Check if we're in a Vercel environment with Blob configured
 const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
-console.log('hasBlob:', hasBlob ? 'YES' : 'NO');
+console.log('BLOB_READ_WRITE_TOKEN exists:', !!hasBlob);
+console.log('Environment:', process.env.NODE_ENV || 'development');
 
 // Fallback local storage for development
 let localCache = null;
