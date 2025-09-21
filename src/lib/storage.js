@@ -1,4 +1,4 @@
-import { put, head } from '@vercel/blob';
+import { put, list } from '@vercel/blob';
 
 // Storage filename for Blob
 const STORAGE_FILENAME = 'october-2025-contest-data.json';
@@ -27,27 +27,22 @@ async function loadData() {
   if (hasBlob) {
     try {
       console.log('loadData: Attempting to fetch from Blob');
-      // Check if blob exists first
-      const response = await fetch(`https://blob.vercel-storage.com/${STORAGE_FILENAME}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+      // Use the @vercel/blob list function to check if file exists
+      const { blobs } = await list({ prefix: STORAGE_FILENAME.split('.')[0] });
+      
+      if (blobs.length > 0) {
+        // File exists, fetch it
+        const response = await fetch(blobs[0].url);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('loadData: Successfully loaded from Blob:', data);
+          return data;
         }
-      });
-      
-      console.log('loadData: Blob response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('loadData: Successfully loaded from Blob:', data);
-        return data;
-      } else if (response.status === 404) {
-        // File doesn't exist yet, return defaults
-        console.log('loadData: Blob file not found, using defaults');
-        return { ...defaultContestData };
-      } else {
-        console.error('Error loading from Blob:', response.statusText);
-        return { ...defaultContestData };
       }
+      
+      // File doesn't exist yet, return defaults
+      console.log('loadData: Blob file not found, using defaults');
+      return { ...defaultContestData };
     } catch (error) {
       console.error('Error loading from Blob:', error.message);
       return { ...defaultContestData };
