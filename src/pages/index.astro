@@ -296,6 +296,7 @@ participants.forEach(participant => {
 				<button id="prevWeek">← Previous Week</button>
 				<span><strong>October 2025 - Week {currentWeekNumber}</strong></span>
 				<button id="nextWeek">Next Week →</button>
+				<button id="resetWeek" style="background: #e74c3c; margin-left: 15px;">Reset to Week 1</button>
 			</div>
 
 			<!-- Collapsible Participant Management -->
@@ -624,6 +625,28 @@ participants.forEach(participant => {
 					nextWeekButton.addEventListener('click', function(e) {
 						e.preventDefault();
 						changeWeek(1);
+					});
+				}
+
+				// Reset to week 1 button
+				const resetWeekButton = document.getElementById('resetWeek');
+				if (resetWeekButton) {
+					resetWeekButton.addEventListener('click', async function(e) {
+						e.preventDefault();
+						try {
+							const response = await fetch('/api/change-week', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({ week: 1 })
+							});
+							if (response.ok) {
+								window.location.reload();
+							} else {
+								alert('Error resetting to week 1');
+							}
+						} catch (error) {
+							alert('Error resetting to week 1');
+						}
 					});
 				}
 			});
