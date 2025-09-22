@@ -1,7 +1,6 @@
 ---
 // Fetch existing contest data
-import { getParticipants, getWeekData, getParticipantTotals } from '../lib/db.js';
-import { getContestData } from '../lib/storage.js';
+import { getParticipants, getWeekData, getParticipantTotals, getCurrentWeek } from '../lib/db.js';
 
 let participants = [];
 let weekData = {};
@@ -11,10 +10,7 @@ let currentWeekNumber = 1;
 try {
   participants = await getParticipants();
   participantTotals = await getParticipantTotals();
-
-  // Get current week from storage
-  const contestData = await getContestData();
-  currentWeekNumber = contestData.currentWeek || 1;
+  currentWeekNumber = await getCurrentWeek();
   weekData = await getWeekData(currentWeekNumber);
 } catch (error) {
   console.log('No existing data found, starting fresh');

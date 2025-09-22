@@ -31,6 +31,20 @@ export async function initDB() {
       )
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key VARCHAR(255) PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Initialize current week to 1 if it doesn't exist
+    await pool.query(`
+      INSERT INTO settings (key, value) VALUES ('current_week', '1')
+      ON CONFLICT (key) DO NOTHING
+    `);
+
     console.log('Database tables initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -121,7 +135,7 @@ export async function participantExists(name) {
 export async function getParticipantTotals() {
   await initDB();
   const result = await pool.query(`
-    SELECT 
+    SELECT
       p.name,
       COALESCE(SUM(c.calories), 0) as total_calories
     FROM participants p
@@ -130,4 +144,25 @@ export async function getParticipantTotals() {
     ORDER BY total_calories DESC
   `);
   return result.rows;
+}
+
+export async function getCurrentWeek() {
+  await initDB();
+  const result = await pool.query(
+    'SELECT value FROM settings WHERE key = $1',
+    ['current_week']
+  );
+  return result.rows.length > 0 ? parseInt(result.rows[0].value) : 1;
+}
+
+export async function setCurrentWeek(weekNumber) {
+  await initDB();
+  if (weekNumber >= 1 && weekNumber <= 5) {
+    await pool.query(
+      'UPDATE settings SET value = $1, updated_at = NOW() WHERE key = $2',
+      [weekNumber.toString(), 'current_week']
+    );
+    return true;
+  }
+  return false;
 }

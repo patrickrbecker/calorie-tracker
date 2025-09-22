@@ -1,20 +1,27 @@
-import { setCurrentWeek } from '../../lib/storage.js';
+import { setCurrentWeek } from '../../lib/db.js';
 
 export async function POST({ request }) {
   try {
     const { week } = await request.json();
-    
-    if (!week || week < 1) {
-      return new Response(JSON.stringify({ error: 'Valid week number is required' }), {
+
+    if (!week || week < 1 || week > 5) {
+      return new Response(JSON.stringify({ error: 'Week must be between 1 and 5' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    await setCurrentWeek(week);
+    const success = await setCurrentWeek(week);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    if (!success) {
+      return new Response(JSON.stringify({ error: 'Failed to update week' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
       currentWeek: week
     }), {
       status: 200,
