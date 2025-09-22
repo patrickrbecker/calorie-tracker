@@ -587,6 +587,24 @@ participants.forEach(participant => {
 				}
 			}
 
+			// Function to determine which week a date belongs to
+			function getWeekForDate(dateString) {
+				const weekDates = {
+					1: ['2025-10-01', '2025-10-02', '2025-10-03', '2025-10-04', '2025-10-05'],
+					2: ['2025-10-06', '2025-10-07', '2025-10-08', '2025-10-09', '2025-10-10', '2025-10-11', '2025-10-12'],
+					3: ['2025-10-13', '2025-10-14', '2025-10-15', '2025-10-16', '2025-10-17', '2025-10-18', '2025-10-19'],
+					4: ['2025-10-20', '2025-10-21', '2025-10-22', '2025-10-23', '2025-10-24', '2025-10-25', '2025-10-26'],
+					5: ['2025-10-27', '2025-10-28', '2025-10-29', '2025-10-30', '2025-10-31']
+				};
+
+				for (let week = 1; week <= 5; week++) {
+					if (weekDates[week].includes(dateString)) {
+						return week;
+					}
+				}
+				return 1; // Default to week 1
+			}
+
 			// Week navigation
 			async function changeWeek(direction) {
 				console.log('changeWeek called with direction:', direction);
@@ -665,6 +683,35 @@ participants.forEach(participant => {
 					nextWeekButton.addEventListener('click', function(e) {
 						e.preventDefault();
 						changeWeek(1);
+					});
+				}
+
+				// Date input change handler to auto-switch weeks
+				const dateInput = document.getElementById('selectedDate');
+				if (dateInput) {
+					dateInput.addEventListener('change', async function(e) {
+						const selectedDate = e.target.value;
+						const selectedWeek = getWeekForDate(selectedDate);
+
+						console.log('Date selected:', selectedDate, 'belongs to week:', selectedWeek);
+
+						// If the selected date is in a different week, switch to that week
+						if (selectedWeek !== currentWeek) {
+							console.log('Switching from week', currentWeek, 'to week', selectedWeek);
+							try {
+								const response = await fetch('/api/change-week', {
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify({ week: selectedWeek })
+								});
+
+								if (response.ok) {
+									window.location.reload();
+								}
+							} catch (error) {
+								console.error('Error switching week:', error);
+							}
+						}
 					});
 				}
 
