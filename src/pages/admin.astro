@@ -96,7 +96,7 @@
                 <li>Reset current week to 1</li>
             </ul>
             <p><strong>This action cannot be undone!</strong></p>
-            <button id="clearButton" onclick="clearAllData()">
+            <button id="clearButton">
                 🗑️ Clear All Data & Reset for Production
             </button>
         </div>
@@ -105,6 +105,10 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('clearButton').addEventListener('click', clearAllData);
+        });
+
         async function clearAllData() {
             const button = document.getElementById('clearButton');
             const status = document.getElementById('status');
