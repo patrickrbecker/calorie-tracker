@@ -548,21 +548,36 @@ participants.forEach(participant => {
 
 			// Week navigation
 			async function changeWeek(direction) {
+				console.log('changeWeek called with direction:', direction);
+				console.log('currentWeek:', currentWeek);
 				const newWeek = currentWeek + direction;
-				if (newWeek < 1 || newWeek > 5) return; // October 2025 has 5 weeks max
+				console.log('newWeek:', newWeek);
+
+				if (newWeek < 1 || newWeek > 5) {
+					console.log('Week out of bounds, returning');
+					return; // October 2025 has 5 weeks max
+				}
 
 				try {
+					console.log('Sending request to change week to:', newWeek);
 					const response = await fetch('/api/change-week', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({ week: newWeek })
 					});
 
+					console.log('Response status:', response.status);
+					const result = await response.json();
+					console.log('Response result:', result);
+
 					if (response.ok) {
 						window.location.reload();
+					} else {
+						alert('Error changing week: ' + (result.error || 'Unknown error'));
 					}
 				} catch (error) {
-					alert('Error changing week');
+					console.error('Error changing week:', error);
+					alert('Error changing week: ' + error.message);
 				}
 			}
 
