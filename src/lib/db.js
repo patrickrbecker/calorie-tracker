@@ -167,6 +167,29 @@ export async function setCurrentWeek(weekNumber) {
   return false;
 }
 
+export async function clearAllContestData() {
+  await initDB();
+  try {
+    // Clear all calories data
+    await pool.query('DELETE FROM calories');
+
+    // Clear all participants
+    await pool.query('DELETE FROM participants');
+
+    // Reset current week to 1
+    await pool.query(
+      'UPDATE settings SET value = $1, updated_at = NOW() WHERE key = $2',
+      ['1', 'current_week']
+    );
+
+    console.log('All contest data cleared successfully');
+    return true;
+  } catch (error) {
+    console.error('Error clearing contest data:', error);
+    throw error;
+  }
+}
+
 export async function getAllWeeksData() {
   await initDB();
   const result = await pool.query(
