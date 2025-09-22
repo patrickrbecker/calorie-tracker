@@ -368,7 +368,7 @@ participants.forEach(participant => {
 		</div>
 
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-		<script define:vars={{ currentWeek: currentWeekNumber, chartData: participantTotals }}>
+		<script define:vars={{ currentWeek: currentWeekNumber, chartData: participantTotals, weekData: weekData, participants: participants, weekDays: weekDays }}>
 			// currentWeek is now available from define:vars
 			
 			// Initialize chart if we have data
@@ -376,35 +376,49 @@ participants.forEach(participant => {
 			
 			function initChart() {
 				const canvas = document.getElementById('calorieChart');
-				if (!canvas || !chartData || chartData.length === 0) return;
-				
+				if (!canvas || !participants || participants.length === 0) return;
+
 				const ctx = canvas.getContext('2d');
-				
+
 				// Destroy existing chart if it exists
 				if (calorieChart) {
 					calorieChart.destroy();
 				}
-				
-				const names = chartData.map(item => item.name);
-				const calories = chartData.map(item => parseInt(item.total_calories));
-				
+
+				// Create labels from week days
+				const labels = weekDays.map(day => day.displayDate);
+
+				// Color palette for different participants
+				const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+				// Create datasets for each participant
+				const datasets = participants.map((participant, index) => {
+					const data = weekDays.map(day => {
+						return weekData[day.date]?.[participant] || 0;
+					});
+
+					const color = colors[index % colors.length];
+
+					return {
+						label: participant,
+						data: data,
+						borderColor: color,
+						backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+						borderWidth: 3,
+						fill: false,
+						tension: 0.4,
+						pointBackgroundColor: color,
+						pointBorderColor: color,
+						pointBorderWidth: 2,
+						pointRadius: 5
+					};
+				});
+
 				calorieChart = new Chart(ctx, {
 					type: 'line',
 					data: {
-						labels: names,
-						datasets: [{
-							label: 'Total Calories Burned',
-							data: calories,
-							borderColor: '#FF6384',
-							backgroundColor: 'rgba(255, 99, 132, 0.1)',
-							borderWidth: 3,
-							fill: true,
-							tension: 0.4,
-							pointBackgroundColor: '#FF6384',
-							pointBorderColor: '#FF6384',
-							pointBorderWidth: 2,
-							pointRadius: 6
-						}]
+						labels: labels,
+						datasets: datasets
 					},
 					options: {
 						responsive: true,
