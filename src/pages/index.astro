@@ -387,9 +387,13 @@ participants.forEach(participant => {
 					calorieChart.destroy();
 				}
 
-				// Generate all October 2025 dates
+				// Generate October 2025 dates up to today
+				const today = new Date();
+				const currentDay = today.getMonth() === 9 && today.getFullYear() === 2025 ? today.getDate() : 31;
+				const maxDay = Math.min(currentDay, 31);
+
 				const allDates = [];
-				for (let day = 1; day <= 31; day++) {
+				for (let day = 1; day <= maxDay; day++) {
 					const date = new Date(2025, 9, day); // October is month 9
 					const dateStr = date.toISOString().split('T')[0];
 					allDates.push({
@@ -455,7 +459,7 @@ participants.forEach(participant => {
 							x: {
 								title: {
 									display: true,
-									text: 'Participants'
+									text: 'Date'
 								}
 							}
 						}
