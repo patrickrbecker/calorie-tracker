@@ -293,9 +293,9 @@ participants.forEach(participant => {
 
 			<!-- Week Navigation -->
 			<div class="week-nav">
-				<button onclick="changeWeek(-1)" id="prevWeek">← Previous Week</button>
+				<button id="prevWeek">← Previous Week</button>
 				<span><strong>October 2025 - Week {currentWeekNumber}</strong></span>
-				<button onclick="changeWeek(1)" id="nextWeek">Next Week →</button>
+				<button id="nextWeek">Next Week →</button>
 			</div>
 
 			<!-- Collapsible Participant Management -->
@@ -592,6 +592,23 @@ participants.forEach(participant => {
 					addCaloriesButton.addEventListener('click', function(e) {
 						e.preventDefault();
 						addCalories();
+					});
+				}
+
+				// Week navigation buttons
+				const prevWeekButton = document.getElementById('prevWeek');
+				if (prevWeekButton) {
+					prevWeekButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						changeWeek(-1);
+					});
+				}
+
+				const nextWeekButton = document.getElementById('nextWeek');
+				if (nextWeekButton) {
+					nextWeekButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						changeWeek(1);
 					});
 				}
 			});
