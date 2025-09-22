@@ -86,6 +86,92 @@ participants.forEach(participant => {
 				background: #f8f9fa;
 				color: #333;
 			}
+
+			/* Mobile optimizations */
+			@media (max-width: 768px) {
+				body {
+					padding: 10px;
+				}
+
+				.container {
+					margin: 0;
+					border-radius: 0;
+				}
+
+				.header h1 {
+					font-size: 1.5em !important;
+				}
+
+				.week-header {
+					padding: 10px 15px !important;
+					font-size: 1em !important;
+				}
+
+				.week-nav {
+					padding: 10px 15px !important;
+					flex-direction: column;
+					gap: 10px;
+				}
+
+				.main-controls {
+					padding: 15px !important;
+					flex-direction: column;
+					gap: 10px;
+				}
+
+				.participant-form.show {
+					flex-direction: column !important;
+					align-items: stretch !important;
+				}
+
+				.excel-table {
+					font-size: 12px !important;
+				}
+
+				.excel-table th {
+					min-width: 80px !important;
+					padding: 8px 4px !important;
+					font-size: 11px !important;
+				}
+
+				.excel-table td {
+					padding: 6px 4px !important;
+					min-width: 80px !important;
+				}
+
+				.excel-table .date-cell {
+					min-width: 100px !important;
+					padding-left: 8px !important;
+				}
+
+				.excel-table input {
+					width: 60px !important;
+					font-size: 12px !important;
+				}
+
+				/* Chart mobile optimization */
+				#calorieChart {
+					max-width: 100% !important;
+					height: auto !important;
+				}
+
+				/* Mobile button styling */
+				.main-controls input {
+					width: 100% !important;
+				}
+
+				.main-controls button {
+					width: 100% !important;
+				}
+
+				.participant-form input {
+					width: 100% !important;
+				}
+
+				.participant-form button {
+					width: 100% !important;
+				}
+			}
 			
 			.container {
 				max-width: 1200px;
@@ -121,6 +207,12 @@ participants.forEach(participant => {
 				width: 100%;
 				border-collapse: collapse;
 				font-size: 14px;
+			}
+
+			/* Mobile table wrapper for horizontal scrolling */
+			.table-wrapper {
+				overflow-x: auto;
+				-webkit-overflow-scrolling: touch;
 			}
 			
 			.excel-table th {
@@ -320,7 +412,8 @@ participants.forEach(participant => {
 			</div>
 
 			<!-- Excel-style Table -->
-			<table class="excel-table">
+			<div class="table-wrapper">
+				<table class="excel-table">
 				<thead>
 					<tr>
 						<th>Date</th>
@@ -354,6 +447,7 @@ participants.forEach(participant => {
 					<tr class="empty-row"><td colspan={participants.length + 1}></td></tr>
 				</tbody>
 			</table>
+			</div>
 
 			{participants.length === 0 && (
 				<div style="padding: 40px; text-align: center; color: #7f8c8d;">
@@ -366,7 +460,8 @@ participants.forEach(participant => {
 			{participants.length > 0 && (
 				<div style="padding: 20px; background: white; margin-top: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
 					<h3 style="margin: 0 0 20px 0; text-align: center; color: #2c3e50;">🔥 Overall Calories Burned</h3>
-					<table class="excel-table" id="overallTable">
+					<div class="table-wrapper">
+						<table class="excel-table" id="overallTable">
 						<thead>
 							<tr>
 								<th>Rank</th>
@@ -403,6 +498,7 @@ participants.forEach(participant => {
 								})}
 						</tbody>
 					</table>
+					</div>
 				</div>
 			)}
 
