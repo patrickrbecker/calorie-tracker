@@ -35,8 +35,6 @@ function getWeekDates(weekNumber) {
 const weekDays = [];
 const weekDateStrings = getWeekDates(currentWeekNumber);
 
-console.log(`Generating days for week ${currentWeekNumber} with exact dates:`, weekDateStrings);
-
 weekDateStrings.forEach(dateString => {
   const date = new Date(dateString);
   const dayInfo = {
@@ -47,11 +45,8 @@ weekDateStrings.forEach(dateString => {
       day: 'numeric'
     })
   };
-  console.log(`Adding day: ${dayInfo.displayDate} (${dayInfo.date})`);
   weekDays.push(dayInfo);
 });
-
-console.log(`Week ${currentWeekNumber} final weekDays:`, weekDays.map(d => d.displayDate));
 
 // Calculate weekly totals for each participant
 const weeklyTotals = {};
@@ -579,25 +574,17 @@ participants.forEach(participant => {
 			
 			// Toggle participant form
 			window.toggleParticipantForm = function() {
-				console.log('Toggle function called');
 				const form = document.getElementById('participantForm');
 				const toggle = document.querySelector('.participant-toggle');
-				
-				console.log('Form element:', form);
-				console.log('Toggle element:', toggle);
-				
+
 				if (form && toggle) {
 					if (form.classList.contains('show')) {
 						form.classList.remove('show');
 						toggle.classList.remove('expanded');
-						console.log('Collapsed');
 					} else {
 						form.classList.add('show');
 						toggle.classList.add('expanded');
-						console.log('Expanded');
 					}
-				} else {
-					console.error('Elements not found');
 				}
 			}
 			
@@ -609,8 +596,6 @@ participants.forEach(participant => {
 					return;
 				}
 
-				console.log('Adding participant:', name);
-
 				try {
 					const response = await fetch('/api/add-participant', {
 						method: 'POST',
@@ -618,9 +603,7 @@ participants.forEach(participant => {
 						body: JSON.stringify({ name })
 					});
 
-					console.log('Response status:', response.status);
 					const result = await response.json();
-					console.log('Response result:', result);
 
 					if (response.ok) {
 						// Show success confirmation
@@ -628,11 +611,9 @@ participants.forEach(participant => {
 						document.getElementById('newParticipant').value = '';
 						window.location.reload();
 					} else {
-						console.error('Add participant failed:', result);
 						alert(result.error || 'Failed to add participant');
 					}
 				} catch (error) {
-					console.error('Add participant error:', error);
 					alert('Error adding participant. Please try again.');
 				}
 			}
@@ -643,7 +624,7 @@ participants.forEach(participant => {
 				const participant = document.getElementById('selectedParticipant').value.trim();
 				const calories = parseInt(document.getElementById('calorieAmount').value);
 
-				if (!date || !participant || !calories || calories < 0) {
+				if (!date || !participant || calories === undefined || calories === null || isNaN(calories) || calories < 0) {
 					alert('Please fill in all fields with valid values');
 					return;
 				}
@@ -698,27 +679,20 @@ participants.forEach(participant => {
 
 			// Week navigation
 			async function changeWeek(direction) {
-				console.log('changeWeek called with direction:', direction);
-				console.log('currentWeek:', currentWeek);
 				const newWeek = currentWeek + direction;
-				console.log('newWeek:', newWeek);
 
 				if (newWeek < 1 || newWeek > 5) {
-					console.log('Week out of bounds, returning');
 					return; // October 2025 has 5 weeks max
 				}
 
 				try {
-					console.log('Sending request to change week to:', newWeek);
 					const response = await fetch('/api/change-week', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({ week: newWeek })
 					});
 
-					console.log('Response status:', response.status);
 					const result = await response.json();
-					console.log('Response result:', result);
 
 					if (response.ok) {
 						window.location.reload();
@@ -784,11 +758,8 @@ participants.forEach(participant => {
 						const selectedDate = e.target.value;
 						const selectedWeek = getWeekForDate(selectedDate);
 
-						console.log('Date selected:', selectedDate, 'belongs to week:', selectedWeek);
-
 						// If the selected date is in a different week, switch to that week
 						if (selectedWeek !== currentWeek) {
-							console.log('Switching from week', currentWeek, 'to week', selectedWeek);
 							try {
 								const response = await fetch('/api/change-week', {
 									method: 'POST',
