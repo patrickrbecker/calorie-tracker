@@ -32,9 +32,11 @@ function getStartOfWeek(weekNumber) {
   return new Date(weekStartDates[weekNumber] || weekStartDates[1]);
 }
 
-// Generate 7 days for current week
+// Generate days for current week
 const weekDays = [];
 const startOfWeek = getStartOfWeek(currentWeekNumber);
+
+console.log(`Generating days for week ${currentWeekNumber}, starting from:`, startOfWeek.toDateString());
 
 for (let i = 0; i < 7; i++) {
   const date = new Date(startOfWeek);
@@ -42,16 +44,20 @@ for (let i = 0; i < 7; i++) {
 
   // Only include dates that are in October 2025
   if (date.getMonth() === 9 && date.getFullYear() === 2025) { // October is month 9
-    weekDays.push({
+    const dayInfo = {
       date: date.toISOString().split('T')[0],
       displayDate: date.toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric'
       })
-    });
+    };
+    console.log(`Adding day: ${dayInfo.displayDate} (${dayInfo.date})`);
+    weekDays.push(dayInfo);
   }
 }
+
+console.log(`Week ${currentWeekNumber} final weekDays:`, weekDays.map(d => d.displayDate));
 
 // Calculate weekly totals for each participant
 const weeklyTotals = {};
