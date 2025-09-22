@@ -389,29 +389,21 @@ participants.forEach(participant => {
 				const calories = chartData.map(item => parseInt(item.total_calories));
 				
 				calorieChart = new Chart(ctx, {
-					type: 'bar',
+					type: 'line',
 					data: {
 						labels: names,
 						datasets: [{
 							label: 'Total Calories Burned',
 							data: calories,
-							backgroundColor: [
-								'#FF6384',
-								'#36A2EB', 
-								'#FFCE56',
-								'#4BC0C0',
-								'#9966FF',
-								'#FF9F40'
-							],
-							borderColor: [
-								'#FF6384',
-								'#36A2EB',
-								'#FFCE56', 
-								'#4BC0C0',
-								'#9966FF',
-								'#FF9F40'
-							],
-							borderWidth: 2
+							borderColor: '#FF6384',
+							backgroundColor: 'rgba(255, 99, 132, 0.1)',
+							borderWidth: 3,
+							fill: true,
+							tension: 0.4,
+							pointBackgroundColor: '#FF6384',
+							pointBorderColor: '#FF6384',
+							pointBorderWidth: 2,
+							pointRadius: 6
 						}]
 					},
 					options: {
