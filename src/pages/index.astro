@@ -18,19 +18,24 @@ try {
   console.log('No existing data found, starting fresh');
 }
 
-// Function to get the Sunday of a given week in October 2025
-function getSundayOfWeek(weekNumber) {
-  // October 1, 2025 is a Wednesday
-  // So the first Sunday is October 5, 2025
-  const firstSunday = new Date('2025-10-05');
-  const sunday = new Date(firstSunday);
-  sunday.setDate(firstSunday.getDate() + ((weekNumber - 1) * 7));
-  return sunday;
+// Function to get the start of a given week in October 2025
+function getStartOfWeek(weekNumber) {
+  if (weekNumber === 1) {
+    // Week 1 starts on October 1st (Wednesday)
+    return new Date('2025-10-01');
+  } else {
+    // Subsequent weeks start on Sundays
+    // Week 2 starts on October 6th (first Sunday after Oct 1)
+    const firstSunday = new Date('2025-10-06');
+    const sunday = new Date(firstSunday);
+    sunday.setDate(firstSunday.getDate() + ((weekNumber - 2) * 7));
+    return sunday;
+  }
 }
 
-// Generate 7 days for current calendar week (Sunday to Saturday)
+// Generate 7 days for current week
 const weekDays = [];
-const startOfWeek = getSundayOfWeek(currentWeekNumber);
+const startOfWeek = getStartOfWeek(currentWeekNumber);
 
 for (let i = 0; i < 7; i++) {
   const date = new Date(startOfWeek);
