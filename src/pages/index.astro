@@ -410,20 +410,31 @@ participants.forEach(participant => {
 
 				// Create datasets for each participant with cumulative data
 				const datasets = participants.map((participant, index) => {
-					let cumulativeTotal = 0;
-					let hasData = false;
+					// Find the last date where this participant has actual calorie data
+					let lastDataDate = null;
+					for (let i = allDates.length - 1; i >= 0; i--) {
+						if (allWeeksData[allDates[i].date]?.[participant] > 0) {
+							lastDataDate = allDates[i].date;
+							break;
+						}
+					}
 
+					let cumulativeTotal = 0;
 					const data = allDates.map((dateObj, dateIndex) => {
 						const dailyCalories = allWeeksData[dateObj.date]?.[participant] || 0;
-
-						if (dailyCalories > 0) {
-							hasData = true;
-						}
-
 						cumulativeTotal += dailyCalories;
 
-						// Only return data if we've had at least one entry or this entry has calories
-						return hasData ? cumulativeTotal : null;
+						// If we haven't found any data for this participant yet, return null
+						if (cumulativeTotal === 0) {
+							return null;
+						}
+
+						// If this date is after the last date with actual data, return null to end the line
+						if (lastDataDate && dateObj.date > lastDataDate) {
+							return null;
+						}
+
+						return cumulativeTotal;
 					});
 
 					const color = colors[index % colors.length];
