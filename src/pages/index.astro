@@ -411,10 +411,19 @@ participants.forEach(participant => {
 				// Create datasets for each participant with cumulative data
 				const datasets = participants.map((participant, index) => {
 					let cumulativeTotal = 0;
-					const data = allDates.map(dateObj => {
+					let hasData = false;
+
+					const data = allDates.map((dateObj, dateIndex) => {
 						const dailyCalories = allWeeksData[dateObj.date]?.[participant] || 0;
+
+						if (dailyCalories > 0) {
+							hasData = true;
+						}
+
 						cumulativeTotal += dailyCalories;
-						return cumulativeTotal;
+
+						// Only return data if we've had at least one entry or this entry has calories
+						return hasData ? cumulativeTotal : null;
 					});
 
 					const color = colors[index % colors.length];
@@ -430,7 +439,8 @@ participants.forEach(participant => {
 						pointBackgroundColor: color,
 						pointBorderColor: color,
 						pointBorderWidth: 2,
-						pointRadius: 3
+						pointRadius: 3,
+						spanGaps: false
 					};
 				});
 
