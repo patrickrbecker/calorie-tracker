@@ -1,17 +1,19 @@
 ---
 // Fetch existing contest data
-import { getParticipants, getWeekData, getParticipantTotals, getCurrentWeek } from '../lib/db.js';
+import { getParticipants, getWeekData, getParticipantTotals, getCurrentWeek, getAllWeeksData } from '../lib/db.js';
 
 let participants = [];
 let weekData = {};
 let participantTotals = [];
 let currentWeekNumber = 1;
+let allWeeksData = {};
 
 try {
   participants = await getParticipants();
   participantTotals = await getParticipantTotals();
   currentWeekNumber = await getCurrentWeek();
   weekData = await getWeekData(currentWeekNumber);
+  allWeeksData = await getAllWeeksData();
 } catch (error) {
   console.log('No existing data found, starting fresh');
 }
@@ -361,14 +363,14 @@ participants.forEach(participant => {
 			<!-- Chart Section -->
 			{participants.length > 0 && (
 				<div style="padding: 20px; background: white; margin-top: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-					<h3 style="margin: 0 0 20px 0; text-align: center; color: #2c3e50;">🏆 Total Calories Burned</h3>
+					<h3 style="margin: 0 0 20px 0; text-align: center; color: #2c3e50;">🏆 Cumulative Calorie Progress - October 2025</h3>
 					<canvas id="calorieChart" width="400" height="200"></canvas>
 				</div>
 			)}
 		</div>
 
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-		<script define:vars={{ currentWeek: currentWeekNumber, chartData: participantTotals, weekData: weekData, participants: participants, weekDays: weekDays }}>
+		<script define:vars={{ currentWeek: currentWeekNumber, chartData: participantTotals, weekData: weekData, participants: participants, weekDays: weekDays, allWeeksData: allWeeksData }}>
 			// currentWeek is now available from define:vars
 			
 			// Initialize chart if we have data
@@ -385,16 +387,30 @@ participants.forEach(participant => {
 					calorieChart.destroy();
 				}
 
-				// Create labels from week days
-				const labels = weekDays.map(day => day.displayDate);
+				// Generate all October 2025 dates
+				const allDates = [];
+				for (let day = 1; day <= 31; day++) {
+					const date = new Date(2025, 9, day); // October is month 9
+					const dateStr = date.toISOString().split('T')[0];
+					allDates.push({
+						date: dateStr,
+						displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+					});
+				}
+
+				// Create labels from all October dates
+				const labels = allDates.map(d => d.displayDate);
 
 				// Color palette for different participants
 				const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
 
-				// Create datasets for each participant
+				// Create datasets for each participant with cumulative data
 				const datasets = participants.map((participant, index) => {
-					const data = weekDays.map(day => {
-						return weekData[day.date]?.[participant] || 0;
+					let cumulativeTotal = 0;
+					const data = allDates.map(dateObj => {
+						const dailyCalories = allWeeksData[dateObj.date]?.[participant] || 0;
+						cumulativeTotal += dailyCalories;
+						return cumulativeTotal;
 					});
 
 					const color = colors[index % colors.length];
@@ -410,7 +426,7 @@ participants.forEach(participant => {
 						pointBackgroundColor: color,
 						pointBorderColor: color,
 						pointBorderWidth: 2,
-						pointRadius: 5
+						pointRadius: 3
 					};
 				});
 

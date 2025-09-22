@@ -166,3 +166,22 @@ export async function setCurrentWeek(weekNumber) {
   }
   return false;
 }
+
+export async function getAllWeeksData() {
+  await initDB();
+  const result = await pool.query(
+    'SELECT * FROM calories ORDER BY date, participant_name'
+  );
+
+  // Group by date and participant
+  const allData = {};
+  result.rows.forEach(row => {
+    const dateStr = row.date.toISOString().split('T')[0];
+    if (!allData[dateStr]) {
+      allData[dateStr] = {};
+    }
+    allData[dateStr][row.participant_name] = row.calories;
+  });
+
+  return allData;
+}
