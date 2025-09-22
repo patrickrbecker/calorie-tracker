@@ -18,39 +18,32 @@ try {
   console.log('No existing data found, starting fresh');
 }
 
-// Get October 2025 contest info
-const contestStart = new Date('2025-10-01'); // October 1, 2025
-const now = new Date();
-
-// Calculate which week of October we're in
-let currentDate = new Date();
-// If we're not in October 2025 yet, default to first week
-if (currentDate < contestStart) {
-  currentDate = new Date(contestStart);
+// Function to get the Sunday of a given week in October 2025
+function getSundayOfWeek(weekNumber) {
+  // October 1, 2025 is a Wednesday
+  // So the first Sunday is October 5, 2025
+  const firstSunday = new Date('2025-10-05');
+  const sunday = new Date(firstSunday);
+  sunday.setDate(firstSunday.getDate() + ((weekNumber - 1) * 7));
+  return sunday;
 }
 
-// Calculate week number based on October 1st being week 1
-const weekNumber = Math.ceil((currentDate.getDate()) / 7);
-const contestWeek = Math.max(1, Math.min(weekNumber, 5)); // October has 5 weeks max
-
-// Get the start of the current contest week
-const startOfWeek = new Date('2025-10-01');
-startOfWeek.setDate(startOfWeek.getDate() + ((currentWeekNumber - 1) * 7));
-
-// Generate 7 days for current October week
+// Generate 7 days for current calendar week (Sunday to Saturday)
 const weekDays = [];
+const startOfWeek = getSundayOfWeek(currentWeekNumber);
+
 for (let i = 0; i < 7; i++) {
   const date = new Date(startOfWeek);
   date.setDate(startOfWeek.getDate() + i);
-  
+
   // Only include dates that are in October 2025
   if (date.getMonth() === 9 && date.getFullYear() === 2025) { // October is month 9
     weekDays.push({
       date: date.toISOString().split('T')[0],
-      displayDate: date.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
+      displayDate: date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
       })
     });
   }
