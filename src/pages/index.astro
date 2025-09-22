@@ -18,44 +18,38 @@ try {
   console.log('No existing data found, starting fresh');
 }
 
-// Function to get the start of a given week in October 2025
-function getStartOfWeek(weekNumber) {
-  // Define explicit start dates for each week
-  const weekStartDates = {
-    1: '2025-10-01', // Week 1: Oct 1-5 (Wed-Sun)
-    2: '2025-10-06', // Week 2: Oct 6-12 (Sun-Sat)
-    3: '2025-10-13', // Week 3: Oct 13-19 (Sun-Sat)
-    4: '2025-10-20', // Week 4: Oct 20-26 (Sun-Sat)
-    5: '2025-10-27'  // Week 5: Oct 27-31 (Sun-Thu)
+// Function to get the exact dates for each week in October 2025
+function getWeekDates(weekNumber) {
+  const weekDates = {
+    1: ['2025-10-01', '2025-10-02', '2025-10-03', '2025-10-04', '2025-10-05'], // Wed-Sun
+    2: ['2025-10-06', '2025-10-07', '2025-10-08', '2025-10-09', '2025-10-10', '2025-10-11', '2025-10-12'], // Sun-Sat
+    3: ['2025-10-13', '2025-10-14', '2025-10-15', '2025-10-16', '2025-10-17', '2025-10-18', '2025-10-19'], // Sun-Sat
+    4: ['2025-10-20', '2025-10-21', '2025-10-22', '2025-10-23', '2025-10-24', '2025-10-25', '2025-10-26'], // Sun-Sat
+    5: ['2025-10-27', '2025-10-28', '2025-10-29', '2025-10-30', '2025-10-31'] // Sun-Thu
   };
 
-  return new Date(weekStartDates[weekNumber] || weekStartDates[1]);
+  return weekDates[weekNumber] || weekDates[1];
 }
 
-// Generate days for current week
+// Generate days for current week using exact dates
 const weekDays = [];
-const startOfWeek = getStartOfWeek(currentWeekNumber);
+const weekDateStrings = getWeekDates(currentWeekNumber);
 
-console.log(`Generating days for week ${currentWeekNumber}, starting from:`, startOfWeek.toDateString());
+console.log(`Generating days for week ${currentWeekNumber} with exact dates:`, weekDateStrings);
 
-for (let i = 0; i < 7; i++) {
-  const date = new Date(startOfWeek);
-  date.setDate(startOfWeek.getDate() + i);
-
-  // Only include dates that are in October 2025
-  if (date.getMonth() === 9 && date.getFullYear() === 2025) { // October is month 9
-    const dayInfo = {
-      date: date.toISOString().split('T')[0],
-      displayDate: date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      })
-    };
-    console.log(`Adding day: ${dayInfo.displayDate} (${dayInfo.date})`);
-    weekDays.push(dayInfo);
-  }
-}
+weekDateStrings.forEach(dateString => {
+  const date = new Date(dateString);
+  const dayInfo = {
+    date: dateString,
+    displayDate: date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    })
+  };
+  console.log(`Adding day: ${dayInfo.displayDate} (${dayInfo.date})`);
+  weekDays.push(dayInfo);
+});
 
 console.log(`Week ${currentWeekNumber} final weekDays:`, weekDays.map(d => d.displayDate));
 
