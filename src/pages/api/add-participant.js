@@ -3,22 +3,37 @@ import { addParticipant } from '../../lib/db.js';
 export async function POST({ request }) {
   try {
     const { name } = await request.json();
-    console.log('API: Adding participant:', name);
     
-    if (!name || name.trim() === '') {
-      console.log('API: Empty name provided');
+    const trimmedName = name?.trim();
+
+    if (!trimmedName) {
       return new Response(JSON.stringify({ error: 'Participant name is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    const result = await addParticipant(name.trim());
-    console.log('API: Participant added successfully:', result);
+    // Security: Limit name length and check for suspicious patterns
+    if (trimmedName.length > 50) {
+      return new Response(JSON.stringify({ error: 'Participant name too long (max 50 characters)' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Security: Block script tags and other suspicious content
+    if (/<script|javascript:|on\w+\s*=|<iframe|<object|<embed/i.test(trimmedName)) {
+      return new Response(JSON.stringify({ error: 'Invalid characters in participant name' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const result = await addParticipant(trimmedName);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `${name.trim()} added to contest`
+      message: `${trimmedName} added to contest`
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

@@ -557,10 +557,14 @@ participants.forEach(participant => {
 									rankText = "🥉 #3";
 								}
 
+								const safeName = document.createElement('div');
+								safeName.textContent = participant.name;
+								const escapedName = safeName.innerHTML;
+
 								return `
 									<tr>
 										<td style="${rankStyle}">${rankText}</td>
-										<td style="text-align: left; font-weight: bold;">${participant.name}</td>
+										<td style="text-align: left; font-weight: bold;">${escapedName}</td>
 										<td style="text-align: center;">${parseInt(participant.total_calories).toLocaleString()}</td>
 									</tr>
 								`;
