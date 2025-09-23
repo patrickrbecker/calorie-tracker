@@ -950,26 +950,38 @@ participants.forEach(participant => {
 
 			// Inline editing functions - use event delegation
 			function initInlineEditing() {
+				console.log('Initializing inline editing...');
 				// Use event delegation on the table to catch clicks on any editable cell
 				const table = document.querySelector('.excel-table');
+				console.log('Found table:', table);
 				if (table) {
 					table.addEventListener('click', function(e) {
+						console.log('Table clicked, target:', e.target);
 						const cell = e.target.closest('.editable-cell');
+						console.log('Found editable cell:', cell);
 						if (cell && !cell.classList.contains('editing')) {
 							// Only edit cells that have values
 							const valueSpan = cell.querySelector('.calorie-value');
+							console.log('Found value span:', valueSpan, 'content:', valueSpan?.textContent);
 							if (valueSpan && valueSpan.textContent.trim() !== '') {
+								console.log('Starting edit for cell with value:', valueSpan.textContent.trim());
 								startEdit(cell);
+							} else {
+								console.log('Cell has no value, not making it editable');
 							}
 						}
 					});
+				} else {
+					console.error('Table not found!');
 				}
 			}
 
 			function startEdit(cell) {
+				console.log('startEdit called for cell:', cell);
 				// Store original value for rollback
 				const valueSpan = cell.querySelector('.calorie-value');
 				const originalValue = valueSpan.textContent.trim();
+				console.log('Original value:', originalValue);
 				cell.setAttribute('data-original-value', originalValue);
 
 				// Create input field
