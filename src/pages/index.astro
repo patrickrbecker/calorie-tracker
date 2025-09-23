@@ -948,20 +948,22 @@ participants.forEach(participant => {
 				if (e.key === 'Enter') addCalories();
 			});
 
-			// Inline editing functions
+			// Inline editing functions - use event delegation
 			function initInlineEditing() {
-				const editableCells = document.querySelectorAll('.editable-cell');
-				editableCells.forEach(cell => {
-					// Only add click listener to cells with values
-					const valueSpan = cell.querySelector('.calorie-value');
-					if (valueSpan && valueSpan.textContent.trim() !== '') {
-						cell.addEventListener('click', function(e) {
-							if (!cell.classList.contains('editing')) {
+				// Use event delegation on the table to catch clicks on any editable cell
+				const table = document.querySelector('.excel-table');
+				if (table) {
+					table.addEventListener('click', function(e) {
+						const cell = e.target.closest('.editable-cell');
+						if (cell && !cell.classList.contains('editing')) {
+							// Only edit cells that have values
+							const valueSpan = cell.querySelector('.calorie-value');
+							if (valueSpan && valueSpan.textContent.trim() !== '') {
 								startEdit(cell);
 							}
-						});
-					}
-				});
+						}
+					});
+				}
 			}
 
 			function startEdit(cell) {
@@ -1044,13 +1046,6 @@ participants.forEach(participant => {
 						cell.classList.remove('saving');
 						cell.innerHTML = `<span class="calorie-value">${numValue}</span>`;
 
-						// Re-add click listener
-						cell.addEventListener('click', function(e) {
-							if (!cell.classList.contains('editing')) {
-								startEdit(cell);
-							}
-						});
-
 						// Update totals
 						updateTotalsAfterEdit();
 
@@ -1071,13 +1066,6 @@ participants.forEach(participant => {
 					cell.classList.remove('saving');
 					cell.innerHTML = `<span class="calorie-value">${originalValue}</span>`;
 
-					// Re-add click listener
-					cell.addEventListener('click', function(e) {
-						if (!cell.classList.contains('editing')) {
-							startEdit(cell);
-						}
-					});
-
 					alert('Error updating calories: ' + error.message + '. Changes have been reverted.');
 
 					// Remove error state after 3 seconds
@@ -1090,15 +1078,6 @@ participants.forEach(participant => {
 			function cancelEdit(cell, originalValue) {
 				cell.classList.remove('editing');
 				cell.innerHTML = `<span class="calorie-value">${originalValue}</span>`;
-
-				// Re-add click listener if there's a value
-				if (originalValue && originalValue.trim() !== '') {
-					cell.addEventListener('click', function(e) {
-						if (!cell.classList.contains('editing')) {
-							startEdit(cell);
-						}
-					});
-				}
 			}
 
 			function updateTotalsAfterEdit() {
