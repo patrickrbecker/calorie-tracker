@@ -268,6 +268,46 @@ participants.forEach(participant => {
 			.participant-cell:hover {
 				background: #ecf0f1;
 			}
+
+			/* Inline editing styles */
+			.editable-cell {
+				cursor: pointer;
+				position: relative;
+			}
+
+			.editable-cell:hover {
+				background: #e8f4f8 !important;
+				border: 2px solid #3498db;
+			}
+
+			.editable-cell.editing {
+				padding: 0;
+				background: #fff3cd;
+			}
+
+			.editable-cell .edit-input {
+				width: 100%;
+				padding: 8px;
+				border: 2px solid #007bff;
+				background: white;
+				text-align: center;
+				font-size: 14px;
+				box-sizing: border-box;
+			}
+
+			.editable-cell .edit-input:focus {
+				outline: none;
+				border-color: #0056b3;
+			}
+
+			.editable-cell.saving {
+				background: #d1ecf1;
+			}
+
+			.editable-cell.error {
+				background: #f8d7da;
+				border-color: #dc3545;
+			}
 			
 			.empty-row {
 				height: 20px;
@@ -430,8 +470,12 @@ participants.forEach(participant => {
 						<tr>
 							<td class="date-cell">{day.displayDate}</td>
 							{participants.map(participant => (
-								<td class="participant-cell">
-									{weekData[day.date]?.[participant] || ''}
+								<td class="participant-cell editable-cell"
+									data-participant={participant}
+									data-date={day.date}
+									data-week={currentWeekNumber}
+									title="Click to edit">
+									<span class="calorie-value">{weekData[day.date]?.[participant] || ''}</span>
 								</td>
 							))}
 						</tr>
@@ -864,6 +908,9 @@ participants.forEach(participant => {
 					});
 				}
 
+				// Initialize inline editing
+				initInlineEditing();
+
 				// Date input change handler to auto-switch weeks
 				const dateInput = document.getElementById('selectedDate');
 				if (dateInput) {
@@ -900,6 +947,166 @@ participants.forEach(participant => {
 			document.getElementById('calorieAmount').addEventListener('keypress', function(e) {
 				if (e.key === 'Enter') addCalories();
 			});
+
+			// Inline editing functions
+			function initInlineEditing() {
+				const editableCells = document.querySelectorAll('.editable-cell');
+				editableCells.forEach(cell => {
+					// Only add click listener to cells with values
+					const valueSpan = cell.querySelector('.calorie-value');
+					if (valueSpan && valueSpan.textContent.trim() !== '') {
+						cell.addEventListener('click', function(e) {
+							if (!cell.classList.contains('editing')) {
+								startEdit(cell);
+							}
+						});
+					}
+				});
+			}
+
+			function startEdit(cell) {
+				// Store original value for rollback
+				const valueSpan = cell.querySelector('.calorie-value');
+				const originalValue = valueSpan.textContent.trim();
+				cell.setAttribute('data-original-value', originalValue);
+
+				// Create input field
+				const input = document.createElement('input');
+				input.type = 'number';
+				input.className = 'edit-input';
+				input.value = originalValue;
+				input.min = '0';
+				input.max = '50000';
+
+				// Replace content with input
+				cell.classList.add('editing');
+				cell.innerHTML = '';
+				cell.appendChild(input);
+				input.focus();
+				input.select();
+
+				// Handle save/cancel
+				input.addEventListener('keydown', function(e) {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						saveEdit(cell, input.value, originalValue);
+					} else if (e.key === 'Escape') {
+						e.preventDefault();
+						cancelEdit(cell, originalValue);
+					}
+				});
+
+				input.addEventListener('blur', function() {
+					// Save on blur if value changed
+					if (input.value !== originalValue) {
+						saveEdit(cell, input.value, originalValue);
+					} else {
+						cancelEdit(cell, originalValue);
+					}
+				});
+			}
+
+			async function saveEdit(cell, newValue, originalValue) {
+				const participant = cell.getAttribute('data-participant');
+				const date = cell.getAttribute('data-date');
+				const week = parseInt(cell.getAttribute('data-week'));
+
+				// Validate input
+				const numValue = parseInt(newValue);
+				if (isNaN(numValue) || numValue < 0 || numValue > 50000) {
+					alert('Please enter a valid number between 0 and 50,000');
+					const input = cell.querySelector('.edit-input');
+					if (input) input.focus();
+					return;
+				}
+
+				// Show saving state
+				cell.classList.add('saving');
+				cell.classList.remove('editing');
+				cell.innerHTML = '<span class="calorie-value">Saving...</span>';
+
+				try {
+					const response = await fetch('/api/update-calories', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							participant: participant,
+							date: date,
+							calories: numValue,
+							week: week
+						})
+					});
+
+					const result = await response.json();
+
+					if (response.ok) {
+						// Success - update display
+						cell.classList.remove('saving');
+						cell.innerHTML = `<span class="calorie-value">${numValue}</span>`;
+
+						// Re-add click listener
+						cell.addEventListener('click', function(e) {
+							if (!cell.classList.contains('editing')) {
+								startEdit(cell);
+							}
+						});
+
+						// Update totals
+						updateTotalsAfterEdit();
+
+						// Update chart if it exists
+						if (typeof initChart === 'function') {
+							// Refresh chart data and re-render
+							location.reload(); // Simple approach - could be optimized
+						}
+
+					} else {
+						throw new Error(result.error || 'Failed to update calories');
+					}
+
+				} catch (error) {
+					console.error('Error updating calories:', error);
+					// Rollback on error
+					cell.classList.add('error');
+					cell.classList.remove('saving');
+					cell.innerHTML = `<span class="calorie-value">${originalValue}</span>`;
+
+					// Re-add click listener
+					cell.addEventListener('click', function(e) {
+						if (!cell.classList.contains('editing')) {
+							startEdit(cell);
+						}
+					});
+
+					alert('Error updating calories: ' + error.message + '. Changes have been reverted.');
+
+					// Remove error state after 3 seconds
+					setTimeout(() => {
+						cell.classList.remove('error');
+					}, 3000);
+				}
+			}
+
+			function cancelEdit(cell, originalValue) {
+				cell.classList.remove('editing');
+				cell.innerHTML = `<span class="calorie-value">${originalValue}</span>`;
+
+				// Re-add click listener if there's a value
+				if (originalValue && originalValue.trim() !== '') {
+					cell.addEventListener('click', function(e) {
+						if (!cell.classList.contains('editing')) {
+							startEdit(cell);
+						}
+					});
+				}
+			}
+
+			function updateTotalsAfterEdit() {
+				// Simple approach - could be optimized to calculate without reload
+				// For now, just note that totals may be stale until page refresh
+				console.log('Calories updated - page refresh recommended for accurate totals');
+			}
+
 		</script>
 	</body>
 </html>
