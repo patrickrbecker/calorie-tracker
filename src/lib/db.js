@@ -190,6 +190,39 @@ export async function clearAllContestData() {
   }
 }
 
+export async function updateCalories(participantName, date, calories, weekNumber) {
+  await initDB();
+  try {
+    // Get the previous value for rollback capability
+    const previousResult = await pool.query(
+      'SELECT calories FROM calories WHERE participant_name = $1 AND date = $2',
+      [participantName, date]
+    );
+
+    const previousValue = previousResult.rows.length > 0 ? previousResult.rows[0].calories : null;
+
+    // Update the calories (replace, don't add)
+    if (previousResult.rows.length > 0) {
+      // Update existing entry
+      const result = await pool.query(
+        'UPDATE calories SET calories = $1, updated_at = NOW() WHERE participant_name = $2 AND date = $3 RETURNING *',
+        [calories, participantName, date]
+      );
+      return { success: true, previousValue, newValue: calories, updated: result.rows[0] };
+    } else {
+      // Create new entry (shouldn't happen in edit mode, but handle it)
+      const result = await pool.query(
+        'INSERT INTO calories (participant_name, date, calories, week_number) VALUES ($1, $2, $3, $4) RETURNING *',
+        [participantName, date, calories, weekNumber]
+      );
+      return { success: true, previousValue: null, newValue: calories, created: result.rows[0] };
+    }
+  } catch (error) {
+    console.error('Error updating calories:', error);
+    throw error;
+  }
+}
+
 export async function getAllWeeksData() {
   await initDB();
   const result = await pool.query(

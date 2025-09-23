@@ -1,12 +1,4 @@
-import { participantExists } from '../../lib/db.js';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL_NO_SSL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+import { participantExists, updateCalories } from '../../lib/db.js';
 
 export async function POST({ request }) {
   try {
@@ -54,48 +46,18 @@ export async function POST({ request }) {
       });
     }
 
-    // Get the previous value for rollback capability
-    const previousResult = await pool.query(
-      'SELECT calories FROM calories WHERE participant_name = $1 AND date = $2',
-      [trimmedParticipant, date]
-    );
+    // Update the calories using the db function
+    const result = await updateCalories(trimmedParticipant, date, numCalories, week);
 
-    const previousValue = previousResult.rows.length > 0 ? previousResult.rows[0].calories : null;
-
-    // Update the calories (replace, don't add)
-    if (previousResult.rows.length > 0) {
-      // Update existing entry
-      const result = await pool.query(
-        'UPDATE calories SET calories = $1, updated_at = NOW() WHERE participant_name = $2 AND date = $3 RETURNING *',
-        [numCalories, trimmedParticipant, date]
-      );
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: `Updated ${trimmedParticipant} calories for ${date} to ${numCalories}`,
-        previousValue: previousValue,
-        newValue: numCalories
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } else {
-      // Create new entry (shouldn't happen in edit mode, but handle it)
-      const result = await pool.query(
-        'INSERT INTO calories (participant_name, date, calories, week_number) VALUES ($1, $2, $3, $4) RETURNING *',
-        [trimmedParticipant, date, numCalories, week]
-      );
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: `Created new entry: ${numCalories} calories for ${trimmedParticipant} on ${date}`,
-        previousValue: null,
-        newValue: numCalories
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    return new Response(JSON.stringify({
+      success: true,
+      message: `Updated ${trimmedParticipant} calories for ${date} to ${numCalories}`,
+      previousValue: result.previousValue,
+      newValue: result.newValue
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
 
   } catch (error) {
     console.error('Update calories error:', error);
