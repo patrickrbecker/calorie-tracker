@@ -205,7 +205,7 @@ export async function updateCalories(participantName, date, calories, weekNumber
     if (previousResult.rows.length > 0) {
       // Update existing entry
       const result = await pool.query(
-        'UPDATE calories SET calories = $1, updated_at = NOW() WHERE participant_name = $2 AND date = $3 RETURNING *',
+        'UPDATE calories SET calories = $1 WHERE participant_name = $2 AND date = $3 RETURNING *',
         [calories, participantName, date]
       );
       return { success: true, previousValue, newValue: calories, updated: result.rows[0] };
