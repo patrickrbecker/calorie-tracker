@@ -1,6 +1,7 @@
 ---
 // Fetch existing contest data
 import { getParticipants, getWeekData, getParticipantTotals, getCurrentWeek, getAllWeeksData } from '../lib/db.js';
+import { inject } from '@vercel/analytics';
 
 let participants = [];
 let weekData = {};
@@ -77,6 +78,12 @@ participants.forEach(participant => {
 		  gtag('js', new Date());
 
 		  gtag('config', 'G-4C0YRJ9CXX');
+		</script>
+
+		<!-- Vercel Analytics -->
+		<script>
+			import { inject } from '@vercel/analytics/client';
+			inject();
 		</script>
 		<style>
 			body {
