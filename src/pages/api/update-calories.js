@@ -4,6 +4,9 @@ export async function POST({ request }) {
   try {
     console.log('Update calories API called');
     console.log('POSTGRES_URL_NO_SSL available:', !!process.env.POSTGRES_URL_NO_SSL);
+    console.log('updateCalories function available:', typeof updateCalories);
+    console.log('participantExists function available:', typeof participantExists);
+
     const { date, participant, calories, week } = await request.json();
     console.log('Request data:', { date, participant, calories, week });
 
