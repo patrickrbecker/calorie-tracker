@@ -1,6 +1,6 @@
 ---
 // Fetch existing contest data
-import { getParticipants, getWeekData, getParticipantTotals, getCurrentWeek, getAllWeeksData } from '../lib/db.js';
+import { getParticipants, getWeekData, getParticipantTotals, getCurrentWeek, setCurrentWeek, getAllWeeksData } from '../lib/db.js';
 import Analytics from '@vercel/analytics/astro';
 
 let participants = [];
@@ -12,11 +12,56 @@ let allWeeksData = {};
 try {
   participants = await getParticipants();
   participantTotals = await getParticipantTotals();
-  currentWeekNumber = await getCurrentWeek();
-  weekData = await getWeekData(currentWeekNumber);
   allWeeksData = await getAllWeeksData();
+
+  // Auto-detect current week based on Eastern Time
+  const calculatedWeek = getCurrentWeekByDate();
+  const storedWeek = await getCurrentWeek();
+
+  // Update stored week if different from calculated week
+  if (calculatedWeek !== storedWeek) {
+    await setCurrentWeek(calculatedWeek);
+    currentWeekNumber = calculatedWeek;
+  } else {
+    currentWeekNumber = storedWeek;
+  }
+
+  weekData = await getWeekData(currentWeekNumber);
 } catch (error) {
   console.log('No existing data found, starting fresh');
+  // Even on error, set the week based on current date
+  currentWeekNumber = getCurrentWeekByDate();
+}
+
+// Function to get current week based on Eastern Time
+function getCurrentWeekByDate() {
+  // Get current date in Eastern Time (EDT/EST)
+  const now = new Date();
+  const easternTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+  const currentDateStr = easternTime.toISOString().split('T')[0];
+
+  // Define week date ranges
+  const weekRanges = {
+    1: { start: '2025-10-01', end: '2025-10-05' },
+    2: { start: '2025-10-06', end: '2025-10-12' },
+    3: { start: '2025-10-13', end: '2025-10-19' },
+    4: { start: '2025-10-20', end: '2025-10-26' },
+    5: { start: '2025-10-27', end: '2025-10-31' }
+  };
+
+  // Find which week we're currently in
+  for (let week = 1; week <= 5; week++) {
+    const range = weekRanges[week];
+    if (currentDateStr >= range.start && currentDateStr <= range.end) {
+      return week;
+    }
+  }
+
+  // If before October, show week 1; if after October, show week 5
+  if (currentDateStr < '2025-10-01') return 1;
+  if (currentDateStr > '2025-10-31') return 5;
+
+  return 1; // fallback
 }
 
 // Function to get the exact dates for each week in October 2025
