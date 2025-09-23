@@ -2,13 +2,7 @@ import { participantExists, updateCalories } from '../../lib/db.js';
 
 export async function POST({ request }) {
   try {
-    console.log('Update calories API called');
-    console.log('POSTGRES_URL_NO_SSL available:', !!process.env.POSTGRES_URL_NO_SSL);
-    console.log('updateCalories function available:', typeof updateCalories);
-    console.log('participantExists function available:', typeof participantExists);
-
     const { date, participant, calories, week } = await request.json();
-    console.log('Request data:', { date, participant, calories, week });
 
     const trimmedParticipant = participant?.trim();
 
@@ -57,9 +51,7 @@ export async function POST({ request }) {
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Updated ${trimmedParticipant} calories for ${date} to ${numCalories}`,
-      previousValue: result.previousValue,
-      newValue: result.newValue
+      message: 'Calories updated successfully'
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -67,11 +59,8 @@ export async function POST({ request }) {
 
   } catch (error) {
     console.error('Update calories error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error message:', error.message);
     return new Response(JSON.stringify({
-      error: 'Internal server error',
-      details: error.message
+      error: 'Internal server error'
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
