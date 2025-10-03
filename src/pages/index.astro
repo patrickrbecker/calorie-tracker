@@ -209,7 +209,8 @@ participants.forEach(participant => {
 				}
 
 				/* Mobile button styling */
-				.main-controls input {
+				.main-controls input,
+				.main-controls select {
 					width: 100% !important;
 				}
 
@@ -448,7 +449,7 @@ participants.forEach(participant => {
 				align-items: center;
 			}
 			
-			.main-controls input, .main-controls button, .participant-form input, .participant-form button {
+			.main-controls input, .main-controls select, .main-controls button, .participant-form input, .participant-form button {
 				padding: 8px 12px;
 				border: 1px solid #bdc3c7;
 				border-radius: 4px;
@@ -604,7 +605,12 @@ participants.forEach(participant => {
 			<!-- Main Calorie Tracking Controls -->
 			<div class="main-controls">
 				<input type="date" id="selectedDate" value={getCurrentDateInEasternTime()} min="2025-10-01" max="2025-10-31">
-				<input type="text" id="selectedParticipant" placeholder="Participant name">
+				<select id="selectedParticipant">
+					<option value="">Select participant</option>
+					{participants.map(participant => (
+						<option value={participant}>{participant}</option>
+					))}
+				</select>
 				<input type="number" id="calorieAmount" placeholder="Calories burned" min="0">
 				<button type="button" id="addCaloriesBtn">🔥 Add Calories</button>
 			</div>
