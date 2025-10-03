@@ -39,6 +39,15 @@ export async function initDB() {
       )
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shoutbox_messages (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
     // Initialize current week to 1 if it doesn't exist
     await pool.query(`
       INSERT INTO settings (key, value) VALUES ('current_week', '1')
@@ -240,4 +249,61 @@ export async function getAllWeeksData() {
   });
 
   return allData;
+}
+
+// Shoutbox functions
+export async function addShoutboxMessage(username, message) {
+  await initDB();
+  try {
+    // Basic validation
+    if (!username || !message) {
+      throw new Error('Username and message are required');
+    }
+
+    // Limit message length
+    if (message.length > 500) {
+      throw new Error('Message too long (max 500 characters)');
+    }
+
+    // Trim and sanitize input
+    const cleanUsername = username.trim().substring(0, 255);
+    const cleanMessage = message.trim();
+
+    const result = await pool.query(
+      'INSERT INTO shoutbox_messages (username, message) VALUES ($1, $2) RETURNING *',
+      [cleanUsername, cleanMessage]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error adding shoutbox message:', error);
+    throw error;
+  }
+}
+
+export async function getRecentShoutboxMessages(limit = 20) {
+  await initDB();
+  try {
+    const result = await pool.query(
+      'SELECT * FROM shoutbox_messages ORDER BY created_at DESC LIMIT $1',
+      [limit]
+    );
+    return result.rows.reverse(); // Show oldest first in display
+  } catch (error) {
+    console.error('Error getting shoutbox messages:', error);
+    throw error;
+  }
+}
+
+export async function deleteShoutboxMessage(messageId) {
+  await initDB();
+  try {
+    const result = await pool.query(
+      'DELETE FROM shoutbox_messages WHERE id = $1 RETURNING *',
+      [messageId]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error deleting shoutbox message:', error);
+    throw error;
+  }
 }

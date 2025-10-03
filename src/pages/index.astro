@@ -466,6 +466,111 @@ participants.forEach(participant => {
 			.main-controls button:hover, .participant-form button:hover {
 				background: #2980b9;
 			}
+
+			/* Shoutbox styles */
+			.shoutbox {
+				background: white;
+				border-radius: 8px;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+				margin-top: 20px;
+				overflow: hidden;
+			}
+
+			.shoutbox-header {
+				background: #2c3e50;
+				color: white;
+				padding: 15px 20px;
+				font-size: 1.1em;
+				font-weight: bold;
+			}
+
+			.shoutbox-messages {
+				max-height: 300px;
+				overflow-y: auto;
+				padding: 10px;
+				background: #f8f9fa;
+			}
+
+			.shout-message {
+				background: white;
+				border-radius: 6px;
+				padding: 8px 12px;
+				margin-bottom: 8px;
+				border-left: 3px solid #3498db;
+				box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+			}
+
+			.shout-username {
+				font-weight: bold;
+				color: #2c3e50;
+				font-size: 0.9em;
+			}
+
+			.shout-time {
+				color: #7f8c8d;
+				font-size: 0.8em;
+				float: right;
+			}
+
+			.shout-text {
+				color: #34495e;
+				margin-top: 4px;
+				word-wrap: break-word;
+			}
+
+			.shoutbox-form {
+				padding: 15px 20px;
+				background: #ecf0f1;
+				border-top: 1px solid #bdc3c7;
+				display: flex;
+				gap: 10px;
+				align-items: center;
+			}
+
+			.shoutbox-form input[type="text"] {
+				flex: 1;
+				padding: 8px 12px;
+				border: 1px solid #bdc3c7;
+				border-radius: 4px;
+				font-size: 14px;
+			}
+
+			.shoutbox-form input[type="text"]:focus {
+				outline: none;
+				border-color: #3498db;
+			}
+
+			.shoutbox-form button {
+				background: #27ae60;
+				color: white;
+				border: none;
+				padding: 8px 16px;
+				border-radius: 4px;
+				cursor: pointer;
+				font-weight: bold;
+				font-size: 14px;
+			}
+
+			.shoutbox-form button:hover {
+				background: #229954;
+			}
+
+			.shoutbox-form button:disabled {
+				background: #95a5a6;
+				cursor: not-allowed;
+			}
+
+			@media (max-width: 768px) {
+				.shoutbox-form {
+					flex-direction: column;
+					gap: 8px;
+				}
+
+				.shoutbox-form input[type="text"],
+				.shoutbox-form button {
+					width: 100%;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -606,6 +711,23 @@ participants.forEach(participant => {
 					<canvas id="calorieChart" width="400" height="200"></canvas>
 				</div>
 			)}
+
+			<!-- Shoutbox Section -->
+			<div class="shoutbox">
+				<div class="shoutbox-header">
+					💬 Team Chat
+				</div>
+				<div class="shoutbox-messages" id="shoutboxMessages">
+					<div style="text-align: center; color: #7f8c8d; padding: 20px;">
+						Loading messages...
+					</div>
+				</div>
+				<div class="shoutbox-form">
+					<input type="text" id="shoutUsername" placeholder="Your name" maxlength="255">
+					<input type="text" id="shoutMessage" placeholder="Type your message..." maxlength="500">
+					<button type="button" id="sendShoutBtn">Send</button>
+				</div>
+			</div>
 		</div>
 
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1134,6 +1256,135 @@ participants.forEach(participant => {
 				// Simple approach - could be optimized to calculate without reload
 				// For now, just note that totals may be stale until page refresh
 			}
+
+			// Shoutbox functionality
+			let shoutboxRefreshInterval;
+
+			async function loadShoutboxMessages() {
+				try {
+					const response = await fetch('/api/get-shouts?limit=15');
+					const result = await response.json();
+
+					const messagesContainer = document.getElementById('shoutboxMessages');
+					if (response.ok && result.data) {
+						if (result.data.length === 0) {
+							messagesContainer.innerHTML = '<div style="text-align: center; color: #7f8c8d; padding: 20px;">No messages yet. Be the first to say something!</div>';
+						} else {
+							messagesContainer.innerHTML = result.data.map(msg => {
+								const date = new Date(msg.created_at);
+								const timeStr = date.toLocaleTimeString('en-US', {
+									hour: 'numeric',
+									minute: '2-digit',
+									hour12: true
+								});
+
+								// Escape HTML to prevent XSS
+								const safeUsername = document.createElement('div');
+								safeUsername.textContent = msg.username;
+								const escapedUsername = safeUsername.innerHTML;
+
+								const safeMessage = document.createElement('div');
+								safeMessage.textContent = msg.message;
+								const escapedMessage = safeMessage.innerHTML;
+
+								return `
+									<div class="shout-message">
+										<div>
+											<span class="shout-username">${escapedUsername}</span>
+											<span class="shout-time">${timeStr}</span>
+										</div>
+										<div class="shout-text">${escapedMessage}</div>
+									</div>
+								`;
+							}).join('');
+
+							// Auto-scroll to bottom
+							messagesContainer.scrollTop = messagesContainer.scrollHeight;
+						}
+					} else {
+						messagesContainer.innerHTML = '<div style="text-align: center; color: #e74c3c; padding: 20px;">Error loading messages</div>';
+					}
+				} catch (error) {
+					console.error('Error loading shoutbox:', error);
+					const messagesContainer = document.getElementById('shoutboxMessages');
+					messagesContainer.innerHTML = '<div style="text-align: center; color: #e74c3c; padding: 20px;">Error loading messages</div>';
+				}
+			}
+
+			async function sendShout() {
+				const usernameInput = document.getElementById('shoutUsername');
+				const messageInput = document.getElementById('shoutMessage');
+				const sendBtn = document.getElementById('sendShoutBtn');
+
+				const username = usernameInput.value.trim();
+				const message = messageInput.value.trim();
+
+				if (!username || !message) {
+					alert('Please enter both your name and a message');
+					return;
+				}
+
+				// Disable button to prevent spam
+				sendBtn.disabled = true;
+				sendBtn.textContent = 'Sending...';
+
+				try {
+					const response = await fetch('/api/add-shout', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ username, message })
+					});
+
+					const result = await response.json();
+
+					if (response.ok) {
+						messageInput.value = ''; // Clear message, keep username
+						await loadShoutboxMessages(); // Refresh messages
+					} else {
+						alert(result.error || 'Failed to send message');
+					}
+				} catch (error) {
+					console.error('Error sending shout:', error);
+					alert('Error sending message. Please try again.');
+				} finally {
+					sendBtn.disabled = false;
+					sendBtn.textContent = 'Send';
+				}
+			}
+
+			// Initialize shoutbox when page loads
+			document.addEventListener('DOMContentLoaded', function() {
+				// Load initial messages
+				loadShoutboxMessages();
+
+				// Set up auto-refresh every 10 seconds
+				shoutboxRefreshInterval = setInterval(loadShoutboxMessages, 10000);
+
+				// Add event listeners
+				const sendBtn = document.getElementById('sendShoutBtn');
+				if (sendBtn) {
+					sendBtn.addEventListener('click', sendShout);
+				}
+
+				// Enter key handlers for shoutbox
+				const messageInput = document.getElementById('shoutMessage');
+				if (messageInput) {
+					messageInput.addEventListener('keypress', function(e) {
+						if (e.key === 'Enter') {
+							sendShout();
+						}
+					});
+				}
+
+				const usernameInput = document.getElementById('shoutUsername');
+				if (usernameInput) {
+					usernameInput.addEventListener('keypress', function(e) {
+						if (e.key === 'Enter') {
+							document.getElementById('shoutMessage').focus();
+						}
+					});
+				}
+			});
 
 		</script>
 	</body>
