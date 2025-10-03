@@ -1115,6 +1115,37 @@ participants.forEach(participant => {
 					});
 				}
 
+				// Initialize shoutbox
+				loadShoutboxMessages();
+
+				// Set up auto-refresh every 10 seconds
+				shoutboxRefreshInterval = setInterval(loadShoutboxMessages, 10000);
+
+				// Shoutbox event listeners
+				const sendBtn = document.getElementById('sendShoutBtn');
+				if (sendBtn) {
+					sendBtn.addEventListener('click', sendShout);
+				}
+
+				// Enter key handlers for shoutbox
+				const messageInput = document.getElementById('shoutMessage');
+				if (messageInput) {
+					messageInput.addEventListener('keypress', function(e) {
+						if (e.key === 'Enter') {
+							sendShout();
+						}
+					});
+				}
+
+				const usernameInput = document.getElementById('shoutUsername');
+				if (usernameInput) {
+					usernameInput.addEventListener('keypress', function(e) {
+						if (e.key === 'Enter') {
+							document.getElementById('shoutMessage').focus();
+						}
+					});
+				}
+
 			});
 
 			// Enter key handlers
@@ -1357,40 +1388,6 @@ participants.forEach(participant => {
 					sendBtn.textContent = 'Send';
 				}
 			}
-
-			// Initialize shoutbox when page loads
-			document.addEventListener('DOMContentLoaded', function() {
-				// Load initial messages
-				loadShoutboxMessages();
-
-				// Set up auto-refresh every 10 seconds
-				shoutboxRefreshInterval = setInterval(loadShoutboxMessages, 10000);
-
-				// Add event listeners
-				const sendBtn = document.getElementById('sendShoutBtn');
-				if (sendBtn) {
-					sendBtn.addEventListener('click', sendShout);
-				}
-
-				// Enter key handlers for shoutbox
-				const messageInput = document.getElementById('shoutMessage');
-				if (messageInput) {
-					messageInput.addEventListener('keypress', function(e) {
-						if (e.key === 'Enter') {
-							sendShout();
-						}
-					});
-				}
-
-				const usernameInput = document.getElementById('shoutUsername');
-				if (usernameInput) {
-					usernameInput.addEventListener('keypress', function(e) {
-						if (e.key === 'Enter') {
-							document.getElementById('shoutMessage').focus();
-						}
-					});
-				}
-			});
 
 		</script>
 	</body>
