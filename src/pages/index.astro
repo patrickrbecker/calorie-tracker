@@ -14,17 +14,8 @@ try {
   participantTotals = await getParticipantTotals();
   allWeeksData = await getAllWeeksData();
 
-  // Auto-detect current week based on Eastern Time
-  const calculatedWeek = getCurrentWeekByDate();
-  const storedWeek = await getCurrentWeek();
-
-  // Update stored week if different from calculated week
-  if (calculatedWeek !== storedWeek) {
-    await setCurrentWeek(calculatedWeek);
-    currentWeekNumber = calculatedWeek;
-  } else {
-    currentWeekNumber = storedWeek;
-  }
+  // Use stored week from database (respects manual navigation)
+  currentWeekNumber = await getCurrentWeek();
 
   weekData = await getWeekData(currentWeekNumber);
 } catch (error) {
