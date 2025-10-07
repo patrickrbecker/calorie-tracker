@@ -955,11 +955,14 @@ participants.forEach(participant => {
 					return;
 				}
 
+				// Calculate the correct week for the selected date
+				const correctWeek = getWeekForDate(date);
+
 				try {
 					const response = await fetch('/api/add-calories', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ date, participant, calories, week: currentWeek })
+						body: JSON.stringify({ date, participant, calories, week: correctWeek })
 					});
 
 					const result = await response.json();
