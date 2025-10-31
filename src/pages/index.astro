@@ -570,13 +570,18 @@ participants.forEach(participant => {
 				font-size: 30px;
 				pointer-events: none;
 				z-index: 9999;
-				animation: fall linear forwards;
 			}
 
 			@keyframes fall {
-				to {
-					transform: translateY(calc(100vh + 100px)) rotate(360deg);
+				0% {
+					top: -50px;
+					opacity: 1;
+					transform: rotate(0deg);
+				}
+				100% {
+					top: 100vh;
 					opacity: 0;
+					transform: rotate(360deg);
 				}
 			}
 		</style>
@@ -760,20 +765,21 @@ participants.forEach(participant => {
 				emojiElement.className = 'falling-emoji';
 				emojiElement.textContent = emoji;
 
-				// Random horizontal position across viewport
-				const randomLeft = Math.random() * (window.innerWidth - 50);
-				emojiElement.style.left = randomLeft + 'px';
-				emojiElement.style.top = '-50px';
+				// Set random horizontal position - use percentage of window width
+				const leftPercent = Math.random() * 100;
+				emojiElement.style.left = leftPercent + '%';
 
-				// Random duration between 3-7 seconds
-				const duration = 3 + Math.random() * 4;
-				emojiElement.style.animationDuration = duration + 's';
+				// Random duration between 5-10 seconds
+				const duration = 5 + Math.random() * 5;
+				emojiElement.style.animation = `fall ${duration}s linear forwards`;
 
 				document.body.appendChild(emojiElement);
 
 				// Remove element after animation completes
 				setTimeout(() => {
-					emojiElement.remove();
+					if (emojiElement.parentNode) {
+						emojiElement.remove();
+					}
 				}, duration * 1000);
 			}
 
