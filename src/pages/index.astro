@@ -583,6 +583,7 @@ participants.forEach(participant => {
 				pointer-events: none;
 				animation: fall linear forwards;
 				will-change: transform;
+				transform-origin: center center;
 			}
 
 			@keyframes fall {
@@ -782,9 +783,9 @@ participants.forEach(participant => {
 				emojiElement.className = 'falling-emoji';
 				emojiElement.textContent = emoji;
 
-				// Random horizontal position across the full viewport width
-				const randomLeft = Math.random() * 100; // Use percentage for better responsiveness
-				emojiElement.style.left = randomLeft + '%';
+				// Random horizontal position - use vw units for full viewport
+				const randomLeft = Math.random() * 95; // 0-95% to keep emojis on screen
+				emojiElement.style.left = randomLeft + 'vw';
 
 				// Random duration between 3-7 seconds
 				const duration = 3 + Math.random() * 4;
