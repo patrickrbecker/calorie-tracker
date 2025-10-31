@@ -565,31 +565,15 @@ participants.forEach(participant => {
 			}
 
 			/* Halloween falling emojis */
-			#halloween-container {
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 100vw;
-				height: 100vh;
-				pointer-events: none;
-				z-index: 9999;
-				overflow: hidden;
-			}
-
 			.falling-emoji {
-				position: absolute;
+				position: fixed;
 				font-size: 30px;
 				pointer-events: none;
+				z-index: 9999;
 				animation: fall linear forwards;
-				will-change: transform;
-				transform-origin: center center;
 			}
 
 			@keyframes fall {
-				from {
-					transform: translateY(0) rotate(0deg);
-					opacity: 1;
-				}
 				to {
 					transform: translateY(calc(100vh + 100px)) rotate(360deg);
 					opacity: 0;
@@ -598,9 +582,6 @@ participants.forEach(participant => {
 		</style>
 	</head>
 	<body>
-		<!-- Halloween falling emojis container -->
-		<div id="halloween-container"></div>
-
 		<div class="container">
 			<!-- Header -->
 			<div class="header">
@@ -772,12 +753,6 @@ participants.forEach(participant => {
 
 			// Halloween falling emojis effect
 			function createFallingEmoji() {
-				const container = document.getElementById('halloween-container');
-				if (!container) {
-					console.error('Halloween container not found!');
-					return;
-				}
-
 				const emojis = ['🦇', '🎃'];
 				const emoji = emojis[Math.floor(Math.random() * emojis.length)];
 
@@ -785,21 +760,16 @@ participants.forEach(participant => {
 				emojiElement.className = 'falling-emoji';
 				emojiElement.textContent = emoji;
 
-				// Get viewport width and calculate random position in pixels
-				const viewportWidth = window.innerWidth;
-				const randomLeftPx = Math.floor(Math.random() * (viewportWidth - 50)); // Subtract emoji width
-
-				console.log('Creating emoji at left:', randomLeftPx, 'viewport width:', viewportWidth);
-
-				emojiElement.style.left = randomLeftPx + 'px';
-				emojiElement.style.position = 'absolute';
+				// Random horizontal position across viewport
+				const randomLeft = Math.random() * (window.innerWidth - 50);
+				emojiElement.style.left = randomLeft + 'px';
 				emojiElement.style.top = '-50px';
 
 				// Random duration between 3-7 seconds
 				const duration = 3 + Math.random() * 4;
 				emojiElement.style.animationDuration = duration + 's';
 
-				container.appendChild(emojiElement);
+				document.body.appendChild(emojiElement);
 
 				// Remove element after animation completes
 				setTimeout(() => {
