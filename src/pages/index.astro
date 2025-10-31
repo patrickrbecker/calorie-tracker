@@ -563,15 +563,6 @@ participants.forEach(participant => {
 					width: 100%;
 				}
 			}
-
-			/* Halloween falling emojis */
-			.halloween-emoji {
-				position: fixed;
-				font-size: 25px;
-				pointer-events: none;
-				z-index: 9999;
-				user-select: none;
-			}
 		</style>
 	</head>
 	<body>
@@ -743,69 +734,6 @@ participants.forEach(participant => {
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<script define:vars={{ currentWeek: currentWeekNumber, chartData: participantTotals, weekData: weekData, participants: participants, weekDays: weekDays, allWeeksData: allWeeksData }}>
 			// currentWeek is now available from define:vars
-
-			// Halloween falling emojis effect
-			(function() {
-				const emojis = [];
-				const emojiTypes = ['🦇', '🎃'];
-				let moveAngle = 0;
-
-				function getRandomNumber(min, max) {
-					return Math.floor(Math.random() * (max - min + 1)) + min;
-				}
-
-				function createEmoji() {
-					const el = document.createElement('div');
-					el.className = 'halloween-emoji';
-					el.textContent = emojiTypes[Math.floor(Math.random() * emojiTypes.length)];
-
-					// Random starting position
-					el.style.top = getRandomNumber(-100, window.innerHeight) + 'px';
-					el.style.left = getRandomNumber(0, window.innerWidth - 30) + 'px';
-
-					// Store fall speed
-					el.dataset.speed = (Math.random() * 2 + 1).toFixed(2);
-
-					document.body.appendChild(el);
-					return el;
-				}
-
-				function moveEmojis() {
-					moveAngle += 0.01;
-					emojis.forEach(moveEmoji);
-				}
-
-				function moveEmoji(el) {
-					const top = parseInt(el.style.top, 10);
-					const speed = parseFloat(el.dataset.speed);
-					const newTop = top + speed + Math.cos(moveAngle + speed) * 0.5;
-
-					if (newTop > window.innerHeight) {
-						// Reset to top with new random horizontal position
-						el.style.top = '-50px';
-						el.style.left = getRandomNumber(0, window.innerWidth - 30) + 'px';
-					} else {
-						el.style.top = newTop + 'px';
-					}
-				}
-
-				function setup() {
-					// Create 15 emojis
-					for (let i = 0; i < 15; i++) {
-						emojis.push(createEmoji());
-					}
-
-					// Animate at 60fps
-					setInterval(moveEmojis, 1000 / 60);
-				}
-
-				// Start when page loads
-				if (document.readyState === 'loading') {
-					document.addEventListener('DOMContentLoaded', setup);
-				} else {
-					setup();
-				}
-			})();
 
 			// Initialize chart if we have data
 			let calorieChart = null;
