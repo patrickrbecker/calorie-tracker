@@ -774,7 +774,10 @@ participants.forEach(participant => {
 			// Halloween falling emojis effect
 			function createFallingEmoji() {
 				const container = document.getElementById('halloween-container');
-				if (!container) return;
+				if (!container) {
+					console.error('Halloween container not found!');
+					return;
+				}
 
 				const emojis = ['🦇', '🎃'];
 				const emoji = emojis[Math.floor(Math.random() * emojis.length)];
@@ -783,9 +786,15 @@ participants.forEach(participant => {
 				emojiElement.className = 'falling-emoji';
 				emojiElement.textContent = emoji;
 
-				// Random horizontal position - use vw units for full viewport
-				const randomLeft = Math.random() * 95; // 0-95% to keep emojis on screen
-				emojiElement.style.left = randomLeft + 'vw';
+				// Get viewport width and calculate random position in pixels
+				const viewportWidth = window.innerWidth;
+				const randomLeftPx = Math.floor(Math.random() * (viewportWidth - 50)); // Subtract emoji width
+
+				console.log('Creating emoji at left:', randomLeftPx, 'viewport width:', viewportWidth);
+
+				emojiElement.style.left = randomLeftPx + 'px';
+				emojiElement.style.position = 'absolute';
+				emojiElement.style.top = '-50px';
 
 				// Random duration between 3-7 seconds
 				const duration = 3 + Math.random() * 4;
