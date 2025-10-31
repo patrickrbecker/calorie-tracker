@@ -563,27 +563,6 @@ participants.forEach(participant => {
 					width: 100%;
 				}
 			}
-
-			/* Halloween falling emojis */
-			.falling-emoji {
-				position: fixed;
-				font-size: 30px;
-				pointer-events: none;
-				z-index: 9999;
-			}
-
-			@keyframes fall {
-				0% {
-					top: -50px;
-					opacity: 1;
-					transform: rotate(0deg);
-				}
-				100% {
-					top: 100vh;
-					opacity: 0;
-					transform: rotate(360deg);
-				}
-			}
 		</style>
 	</head>
 	<body>
@@ -756,51 +735,6 @@ participants.forEach(participant => {
 		<script define:vars={{ currentWeek: currentWeekNumber, chartData: participantTotals, weekData: weekData, participants: participants, weekDays: weekDays, allWeeksData: allWeeksData }}>
 			// currentWeek is now available from define:vars
 
-			// Halloween falling emojis effect
-			function createFallingEmoji() {
-				const emojis = ['🦇', '🎃'];
-				const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-
-				const emojiElement = document.createElement('div');
-				emojiElement.className = 'falling-emoji';
-				emojiElement.textContent = emoji;
-
-				// Set random horizontal position - use percentage of window width
-				const leftPercent = Math.random() * 100;
-				emojiElement.style.left = leftPercent + '%';
-
-				// Random duration between 5-10 seconds
-				const duration = 5 + Math.random() * 5;
-				emojiElement.style.animation = `fall ${duration}s linear forwards`;
-
-				document.body.appendChild(emojiElement);
-
-				// Remove element after animation completes
-				setTimeout(() => {
-					if (emojiElement.parentNode) {
-						emojiElement.remove();
-					}
-				}, duration * 1000);
-			}
-
-			// Create falling emojis periodically
-			function startHalloweenEffect() {
-				// Create one immediately
-				createFallingEmoji();
-
-				// Then create more at random intervals (every 1-3 seconds)
-				setInterval(() => {
-					createFallingEmoji();
-				}, 1000 + Math.random() * 2000);
-			}
-
-			// Start the effect when page loads
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', startHalloweenEffect);
-			} else {
-				startHalloweenEffect();
-			}
-			
 			// Initialize chart if we have data
 			let calorieChart = null;
 			
