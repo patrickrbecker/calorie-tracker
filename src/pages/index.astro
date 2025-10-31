@@ -565,12 +565,22 @@ participants.forEach(participant => {
 			}
 
 			/* Halloween falling emojis */
-			.falling-emoji {
+			#halloween-container {
 				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				pointer-events: none;
+				z-index: 9999;
+				overflow: hidden;
+			}
+
+			.falling-emoji {
+				position: absolute;
 				top: -50px;
 				font-size: 30px;
 				pointer-events: none;
-				z-index: 9999;
 				animation: fall linear forwards;
 				will-change: transform;
 			}
@@ -581,13 +591,16 @@ participants.forEach(participant => {
 					opacity: 1;
 				}
 				to {
-					transform: translateY(calc(100vh + 50px)) rotate(360deg);
+					transform: translateY(calc(100vh + 100px)) rotate(360deg);
 					opacity: 0;
 				}
 			}
 		</style>
 	</head>
 	<body>
+		<!-- Halloween falling emojis container -->
+		<div id="halloween-container"></div>
+
 		<div class="container">
 			<!-- Header -->
 			<div class="header">
@@ -759,6 +772,9 @@ participants.forEach(participant => {
 
 			// Halloween falling emojis effect
 			function createFallingEmoji() {
+				const container = document.getElementById('halloween-container');
+				if (!container) return;
+
 				const emojis = ['🦇', '🎃'];
 				const emoji = emojis[Math.floor(Math.random() * emojis.length)];
 
@@ -767,14 +783,14 @@ participants.forEach(participant => {
 				emojiElement.textContent = emoji;
 
 				// Random horizontal position across the full viewport width
-				const randomLeft = Math.random() * (window.innerWidth - 50); // Subtract emoji size
-				emojiElement.style.left = randomLeft + 'px';
+				const randomLeft = Math.random() * 100; // Use percentage for better responsiveness
+				emojiElement.style.left = randomLeft + '%';
 
 				// Random duration between 3-7 seconds
 				const duration = 3 + Math.random() * 4;
 				emojiElement.style.animationDuration = duration + 's';
 
-				document.body.appendChild(emojiElement);
+				container.appendChild(emojiElement);
 
 				// Remove element after animation completes
 				setTimeout(() => {
